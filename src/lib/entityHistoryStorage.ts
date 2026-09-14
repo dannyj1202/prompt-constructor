@@ -23,6 +23,13 @@ function read(): HistoryStore {
 }
 
 let cache: HistoryStore | null = null
+// useSyncExternalStore needs a snapshot that's reference-stable between calls,
+// so these derived arrays are cached alongside `cache` and only rebuilt when
+// it's reassigned (write/storage) — recomputing from scratch on every call
+// makes React think the store changes every render, which hangs the app in a
+// render loop.
+let allHistoriesCache: EntityHistoryRecord[] | null = null
+let recentlyEditedCache: RecentlyEditedItem[] | null = null
 const listeners = new Set<() => void>()
 
 function emit() {
@@ -32,18 +39,23 @@ function emit() {
 function onStorage(event: StorageEvent) {
   if (event.key !== ENTITY_HISTORY_STORAGE_KEY) return
   cache = read()
+  allHistoriesCache = null
+  recentlyEditedCache = null
   emit()
 }
 
 function write(store: HistoryStore): void {
   localStorage.setItem(ENTITY_HISTORY_STORAGE_KEY, JSON.stringify(store))
   cache = store
+  allHistoriesCache = null
+  recentlyEditedCache = null
   emit()
 }
 
 export function getAllEntityHistories(): EntityHistoryRecord[] {
   cache ??= read()
-  return Object.values(cache)
+  allHistoriesCache ??= Object.values(cache)
+  return allHistoriesCache
 }
 
 export function getEntityHistory<T = unknown>(
@@ -188,7 +200,7 @@ export function deleteEntityHistory(type: EntityType, id: string): void {
 
 export function getRecentlyEditedItems(): RecentlyEditedItem[] {
   cache ??= read()
-  return Object.values(cache)
+  recentlyEditedCache ??= Object.values(cache)
     .sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1))
     .map((record) => {
       const snap = record.currentSnapshot as { description?: string; tags?: string[] } | undefined
@@ -203,6 +215,7 @@ export function getRecentlyEditedItems(): RecentlyEditedItem[] {
         tags: snap?.tags,
       }
     })
+  return recentlyEditedCache
 }
 
 export function subscribeEntityHistory(listener: () => void): () => void {
