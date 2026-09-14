@@ -4,10 +4,12 @@ interface TagListProps {
   tags: string[]
   activeTag: string | null
   onTagClick: (tag: string) => void
+  /** Optional count shown after each tag. */
+  counts?: Map<string, number>
   className?: string
 }
 
-export function TagList({ tags, activeTag, onTagClick, className }: TagListProps) {
+export function TagList({ tags, activeTag, onTagClick, counts, className }: TagListProps) {
   if (tags.length === 0) return null
 
   return (
@@ -27,6 +29,7 @@ export function TagList({ tags, activeTag, onTagClick, className }: TagListProps
             )}
           >
             #{tag}
+            {counts && <span className="ml-1 tabular-nums opacity-60">{counts.get(tag) ?? 0}</span>}
           </button>
         </li>
       ))}

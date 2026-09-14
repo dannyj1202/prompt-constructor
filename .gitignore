@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Saved prompts mirrored for the local MCP server
+mcp/.data

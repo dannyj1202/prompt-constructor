@@ -17,38 +17,50 @@ npm run dev         # Dev server at localhost:5173
 npm run build       # Typecheck + production build
 npm run typecheck   # tsc -b (no emit)
 npm run lint        # oxlint
+npm run mcp         # Local MCP server over stdio (Node 22.18+)
 ```
 
 ## Key Files
 
 | File | Purpose |
 |------|---------|
-| `src/types/prompt.ts` | Data model: `Prompt` = `BuiltInPrompt \| UserPrompt`, `CategoryId` |
-| `src/data/categories.ts` | The 8 categories (ids, names, descriptions) |
-| `src/data/prompts.ts` | Built-in prompts (currently placeholders) |
-| `src/lib/filterPrompts.ts` | Search/category/tag filtering and counts (pure functions) |
-| `src/App.tsx` | Filter state and page layout |
+| `src/types/*.ts` | Data model: `Prompt` (`BuiltInPrompt \| UserPrompt`), `Skill`, `TasteEntry`, `Workflow` |
+| `src/data/*.ts` | Built-in content (categories, prompts, skills, taste, workflows; mostly placeholders) and MCP client configs |
+| `src/lib/router.ts` | Hash router; filter state (`q`, `category`, `tag`) lives in the URL |
+| `src/lib/savedPromptsStorage.ts` | localStorage store for saved prompts (key `prompt-constructor:saved-prompts:v1`) |
+| `src/lib/filterPrompts.ts`, `src/lib/search.ts` | Search/category/tag filtering and counts (pure functions) |
+| `src/App.tsx` | Routes, saved-prompt state, and app-wide dialogs |
+| `mcp/server.ts` | Local stdio MCP server; Node runs the TypeScript directly |
+| `mcp/vite-plugin.ts` | Dev-server endpoint that mirrors saved prompts to `mcp/.data/` for the MCP server |
+| `UI-Improver/README.md` | UI/UX redesign guide, reference component mappings, and liquid metal specs |
 
 ## Project Structure
 
 ```
 src/
 ├── types/          # Shared TypeScript types
-├── data/           # Built-in categories and prompts (static)
-├── lib/            # Pure utilities (filtering, cn)
-├── hooks/          # React hooks (clipboard)
+├── data/           # Built-in content (static)
+├── lib/            # Pure utilities (router, filtering, storage, formatting)
+├── hooks/          # React hooks (clipboard, saved prompts)
 └── components/
-    ├── layout/     # Header
-    ├── prompts/    # Card, grid, sidebar, search, detail dialog, copy button
-    └── ui/         # Generic primitives (icons)
+    ├── layout/     # Header, nav, page/browse layouts, sidebar sections
+    ├── prompts/    # Prompts + Saved pages, card, form, detail/delete dialogs
+    ├── workflows/  # Workflow list and detail pages
+    ├── skills/     # Skills page
+    ├── taste/      # Taste page
+    ├── tags/       # Tags page
+    ├── mcp/        # MCP config dialog
+    └── ui/         # Generic primitives (button, modal, content card, tag list/input, icons)
+mcp/                # Local MCP server + Vite sync plugin
 ```
 
 ## Data Model
 
 - Every prompt has `id`, `title`, `description`, `category`, `tags`, and `body` (the copied text).
 - `origin: 'builtin'` prompts **must** have a `source` citing the repo file or convention they come from.
-- `origin: 'user'` prompts (from the upcoming save flow) have an optional `source` plus `createdAt`, and live in `localStorage`.
-- Built-in ids use the form `<category-id>/<slug>` and must stay stable.
+- `origin: 'user'` prompts come from the Create Prompt form, have optional `category`/`source` plus `createdAt`/`updatedAt`, and live in `localStorage`.
+- Built-in ids use the form `<category-id>/<slug>` and must stay stable: workflow steps reference prompts by id.
+- Skills are copied as full `SKILL.md` files (frontmatter + body) via `formatSkillMarkdown()`.
 
 ## Code Patterns
 
@@ -57,11 +69,17 @@ src/
 - **Styling:** Tailwind utilities, mobile-first (`sm:`, `lg:`), `dark:` variants for every color; use `cn()` from `src/lib/cn.ts` for conditional classes
 - **Filtering:** keep logic in `src/lib/filterPrompts.ts` so built-in and user prompts go through the same path
 - Code style follows the Vite template: single quotes, no semicolons
+- **Routing:** hash routes in `App.tsx` `renderPage()`; read filters from `route.params`, write with `updateParams()`
+- **Dialogs:** build on `ui/modal.tsx`; mount only while open; use `data-autofocus` (not `autoFocus`) for initial focus
+- **Shared with `mcp/server.ts`:** `src/data/*`, `src/lib/formatContent.ts`, `src/lib/userPromptGuard.ts` run under Node type stripping, so use only `import type` there (no runtime imports)
+- **Effects:** always use a block body; `useEffect(() => window.scrollTo(0, 0))` returns a Promise in newer browsers and crashes React
 
 ## Status
 
 1. **Browse and copy** (done): data model, card grid, category and tag filters, search, copy, detail dialog
-2. **Save my own prompt** (not started): form with title, description, labels, saved to `localStorage`, merged into `ALL_PROMPTS` in `App.tsx`
+2. **Saved prompts** (done): create/edit/delete, Saved page, Saved badge in the main library
+3. **Workflows, Skills, Taste, Tags, MCP** (done): pages, data structures, local MCP server
+4. **Content** (pending): real prompt/skill/taste text and sources from the user replace the placeholders
 
 ## Boundaries
 

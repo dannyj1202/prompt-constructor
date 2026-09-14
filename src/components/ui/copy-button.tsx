@@ -1,6 +1,6 @@
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import { cn } from '../../lib/cn'
-import { CheckIcon, CopyIcon } from '../ui/icons'
+import { CheckIcon, CopyIcon } from './icons'
 
 interface CopyButtonProps {
   text: string
@@ -17,7 +17,7 @@ export function CopyButton({ text, label = 'Copy', className }: CopyButtonProps)
       type="button"
       onClick={() => copy(text)}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors',
+        'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition-colors',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500',
         copied
           ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
@@ -30,7 +30,7 @@ export function CopyButton({ text, label = 'Copy', className }: CopyButtonProps)
       {copied ? <CheckIcon className="size-3.5" /> : <CopyIcon className="size-3.5" />}
       {copied ? 'Copied' : status === 'error' ? 'Copy failed' : label}
       <span className="sr-only" aria-live="polite">
-        {copied ? 'Prompt copied to clipboard' : ''}
+        {copied ? 'Copied to clipboard' : ''}
       </span>
     </button>
   )

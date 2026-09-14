@@ -1,107 +1,162 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Header } from './components/layout/header'
-import { CategorySidebar } from './components/prompts/category-sidebar'
+import { PageHeading } from './components/layout/page-heading'
+import { McpConfigDialog } from './components/mcp/mcp-config-dialog'
+import { DeletePromptDialog } from './components/prompts/delete-prompt-dialog'
+import type { PromptActions } from './components/prompts/prompt-actions'
 import { PromptDetailDialog } from './components/prompts/prompt-detail-dialog'
-import { PromptGrid } from './components/prompts/prompt-grid'
-import { CATEGORIES, CATEGORY_BY_ID } from './data/categories'
+import { PromptFormDialog } from './components/prompts/prompt-form-dialog'
+import { PromptsPage } from './components/prompts/prompts-page'
+import { SavedPromptsPage } from './components/prompts/saved-prompts-page'
+import { SkillsPage } from './components/skills/skills-page'
+import { TagsPage } from './components/tags/tags-page'
+import { TastePage } from './components/taste/taste-page'
+import { WorkflowDetailPage } from './components/workflows/workflow-detail-page'
+import { WorkflowsPage } from './components/workflows/workflows-page'
 import { BUILT_IN_PROMPTS } from './data/prompts'
-import { countByCategory, countByTag, filterPrompts } from './lib/filterPrompts'
-import type { CategoryId, Prompt } from './types/prompt'
+import { useSavedPrompts } from './hooks/useSavedPrompts'
+import { syncSavedPromptsToMcp } from './lib/mcpSync'
+import { href, navigate, updateParams, useHashRoute } from './lib/router'
+import { getSavedPrompts } from './lib/savedPromptsStorage'
+import { countByTag } from './lib/search'
+import type { Prompt, UserPrompt, UserPromptInput } from './types/prompt'
 
-// User-saved prompts from localStorage get merged in here once the save flow lands.
-const ALL_PROMPTS: Prompt[] = BUILT_IN_PROMPTS
-const ALL_TAGS = countByTag(ALL_PROMPTS).map(([tag]) => tag)
+const SEARCH_PLACEHOLDERS: Record<string, string> = {
+  '/saved': 'Search saved prompts…',
+  '/workflows': 'Search workflows…',
+  '/skills': 'Search skills…',
+  '/taste': 'Search taste…',
+  '/tags': 'Filter tags…',
+}
 
 export default function App() {
-  const [query, setQuery] = useState('')
-  const [category, setCategory] = useState<CategoryId | null>(null)
-  const [tag, setTag] = useState<string | null>(null)
-  const [openPrompt, setOpenPrompt] = useState<Prompt | null>(null)
+  const route = useHashRoute()
+  const { prompts: savedPrompts, create, update, remove } = useSavedPrompts()
 
-  // Sidebar counts ignore the selected category so they show where matches live.
-  const matchesInAnyCategory = filterPrompts(ALL_PROMPTS, { query, tag, category: null })
-  const visible = category ? matchesInAnyCategory.filter((p) => p.category === category) : matchesInAnyCategory
-  const hasFilters = Boolean(query || category || tag)
+  // Saved prompts first so your own work sits at the top of the library.
+  const allPrompts = useMemo<Prompt[]>(() => [...savedPrompts, ...BUILT_IN_PROMPTS], [savedPrompts])
+  const promptsById = useMemo(() => new Map(allPrompts.map((p) => [p.id, p])), [allPrompts])
+  const tagSuggestions = useMemo(() => countByTag(allPrompts).map(([tag]) => tag), [allPrompts])
 
-  function toggleTag(next: string) {
-    setTag((current) => (current === next ? null : next))
-    setOpenPrompt(null)
+  const [openPromptId, setOpenPromptId] = useState<string | null>(null)
+  const [form, setForm] = useState<{ prompt?: UserPrompt } | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<UserPrompt | null>(null)
+  const [mcpOpen, setMcpOpen] = useState(false)
+
+  // Derived from the live list so edits show immediately and deletes close it.
+  const openPrompt = openPromptId ? promptsById.get(openPromptId) : undefined
+  const isWorkflowDetail = route.path.startsWith('/workflows/')
+
+  // Seed the MCP server's copy of saved prompts on startup (dev only).
+  useEffect(() => {
+    syncSavedPromptsToMcp(getSavedPrompts())
+  }, [])
+  // Braces matter: newer browsers return a Promise from scrollTo, and an
+  // effect must return nothing or a cleanup function.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [route.path])
+
+  const promptActions: PromptActions = {
+    onOpen: (prompt) => setOpenPromptId(prompt.id),
+    onEdit: (prompt) => setForm({ prompt }),
+    onDelete: setPendingDelete,
   }
 
-  function clearFilters() {
-    setQuery('')
-    setCategory(null)
-    setTag(null)
+  function handleQueryChange(q: string) {
+    // Searching from a workflow's detail page searches the workflow list.
+    if (isWorkflowDetail) navigate(href('/workflows', { q }), { replace: true })
+    else updateParams(route, { q })
+  }
+
+  function handleSubmit(input: UserPromptInput) {
+    if (form?.prompt) {
+      update(form.prompt.id, input)
+    } else {
+      create(input)
+      navigate(href('/saved'))
+    }
+    setForm(null)
+  }
+
+  function renderPage() {
+    const { path } = route
+    if (path === '/' || path === '/prompts') {
+      return <PromptsPage route={route} prompts={allPrompts} {...promptActions} />
+    }
+    if (path === '/saved') {
+      return (
+        <SavedPromptsPage route={route} prompts={savedPrompts} onCreate={() => setForm({})} {...promptActions} />
+      )
+    }
+    if (path === '/workflows') return <WorkflowsPage route={route} promptsById={promptsById} />
+    if (isWorkflowDetail) {
+      const workflowId = decodeURIComponent(path.slice('/workflows/'.length))
+      return <WorkflowDetailPage workflowId={workflowId} promptsById={promptsById} />
+    }
+    if (path === '/skills') return <SkillsPage route={route} />
+    if (path === '/taste') return <TastePage route={route} />
+    if (path === '/tags') return <TagsPage route={route} prompts={allPrompts} />
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <PageHeading
+          title="Page not found"
+          description={
+            <a href={href('/prompts')} className="text-indigo-600 hover:underline dark:text-indigo-400">
+              Back to prompts
+            </a>
+          }
+        />
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen">
-      <Header query={query} onQueryChange={setQuery} />
-
-      <div className="mx-auto max-w-7xl px-4 py-6 lg:grid lg:grid-cols-[15rem_1fr] lg:gap-8">
-        <aside className="lg:sticky lg:top-22 lg:self-start">
-          <CategorySidebar
-            categories={CATEGORIES}
-            counts={countByCategory(matchesInAnyCategory)}
-            total={matchesInAnyCategory.length}
-            selected={category}
-            onSelect={setCategory}
-            tags={ALL_TAGS}
-            activeTag={tag}
-            onTagClick={toggleTag}
-          />
-        </aside>
-
-        <main className="mt-4 min-w-0 lg:mt-0">
-          <div className="mb-4 flex min-h-7 flex-wrap items-center gap-2 text-sm text-zinc-500">
-            <span>
-              {visible.length} {visible.length === 1 ? 'prompt' : 'prompts'}
-              {category && (
-                <>
-                  {' in '}
-                  <strong className="font-medium text-zinc-900 dark:text-zinc-100">
-                    {CATEGORY_BY_ID[category].name}
-                  </strong>
-                </>
-              )}
-            </span>
-            {tag && (
-              <button
-                type="button"
-                onClick={() => setTag(null)}
-                aria-label={`Remove tag filter ${tag}`}
-                className="rounded-full bg-indigo-600 px-2 py-0.5 text-xs text-white hover:bg-indigo-500"
-              >
-                #{tag} ×
-              </button>
-            )}
-            {hasFilters && (
-              <button
-                type="button"
-                onClick={clearFilters}
-                className="ml-auto text-xs font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-              >
-                Clear filters
-              </button>
-            )}
-          </div>
-
-          <PromptGrid
-            prompts={visible}
-            activeTag={tag}
-            onOpen={setOpenPrompt}
-            onTagClick={toggleTag}
-            onClearFilters={clearFilters}
-          />
-        </main>
-      </div>
-
-      <PromptDetailDialog
-        prompt={openPrompt}
-        activeTag={tag}
-        onClose={() => setOpenPrompt(null)}
-        onTagClick={toggleTag}
+      <Header
+        currentPath={route.path}
+        query={isWorkflowDetail ? '' : (route.params.get('q') ?? '')}
+        onQueryChange={handleQueryChange}
+        searchPlaceholder={SEARCH_PLACEHOLDERS[route.path] ?? 'Search prompts, tags, sources…'}
+        savedCount={savedPrompts.length}
+        onCreatePrompt={() => setForm({})}
+        onOpenMcp={() => setMcpOpen(true)}
       />
+
+      {renderPage()}
+
+      {openPrompt && (
+        <PromptDetailDialog
+          prompt={openPrompt}
+          activeTag={route.params.get('tag')}
+          onClose={() => setOpenPromptId(null)}
+          onTagClick={(tag) => {
+            setOpenPromptId(null)
+            navigate(href(route.path === '/saved' ? '/saved' : '/prompts', { tag }))
+          }}
+          onEdit={promptActions.onEdit}
+          onDelete={promptActions.onDelete}
+        />
+      )}
+      {form && (
+        <PromptFormDialog
+          prompt={form.prompt}
+          tagSuggestions={tagSuggestions}
+          onSubmit={handleSubmit}
+          onClose={() => setForm(null)}
+        />
+      )}
+      {pendingDelete && (
+        <DeletePromptDialog
+          prompt={pendingDelete}
+          onConfirm={() => {
+            remove(pendingDelete.id)
+            setPendingDelete(null)
+          }}
+          onCancel={() => setPendingDelete(null)}
+        />
+      )}
+      {mcpOpen && <McpConfigDialog onClose={() => setMcpOpen(false)} />}
     </div>
   )
 }

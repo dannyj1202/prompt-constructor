@@ -46,3 +46,8 @@ export const CATEGORIES: Category[] = [
 export const CATEGORY_BY_ID = Object.fromEntries(
   CATEGORIES.map((category) => [category.id, category]),
 ) as Record<CategoryId, Category>
+
+/** Validates untrusted input such as a `?category=` URL param. */
+export function isCategoryId(value: string | null | undefined): value is CategoryId {
+  return !!value && Object.hasOwn(CATEGORY_BY_ID, value)
+}

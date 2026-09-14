@@ -4,6 +4,7 @@ import { SearchIcon } from '../ui/icons'
 interface SearchInputProps {
   value: string
   onChange: (value: string) => void
+  placeholder?: string
 }
 
 function isTypingTarget(target: EventTarget | null): boolean {
@@ -11,7 +12,7 @@ function isTypingTarget(target: EventTarget | null): boolean {
   return target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)
 }
 
-export function SearchInput({ value, onChange }: SearchInputProps) {
+export function SearchInput({ value, onChange, placeholder = 'Search…' }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
   // "/" focuses search from anywhere on the page, like GitHub.
@@ -40,8 +41,8 @@ export function SearchInput({ value, onChange }: SearchInputProps) {
             event.currentTarget.blur()
           }
         }}
-        placeholder="Search prompts, tags, sources…"
-        aria-label="Search prompts"
+        placeholder={placeholder}
+        aria-label={placeholder.replace(/…$/, '')}
         className="h-10 w-full rounded-lg border border-zinc-200 bg-white pr-10 pl-9 text-sm outline-none placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-800 dark:bg-zinc-900"
       />
       {!value && (

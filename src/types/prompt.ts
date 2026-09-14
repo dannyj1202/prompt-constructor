@@ -15,11 +15,10 @@ export interface Category {
 }
 
 interface PromptBase {
-  /** Stable, URL-safe id. Built-ins use `<category>/<slug>`. */
+  /** Stable, URL-safe id. Built-ins use `<category>/<slug>`, saved prompts `saved/<random>`. */
   id: string
   title: string
   description: string
-  category: CategoryId
   tags: string[]
   /** The text copied to the clipboard. */
   body: string
@@ -28,16 +27,22 @@ interface PromptBase {
 /** Ships with the app; always cites the repo file or convention it is based on. */
 export interface BuiltInPrompt extends PromptBase {
   origin: 'builtin'
+  category: CategoryId
   /** e.g. `AGENTS.md § Commit format` or `.github/workflows/release.yml` */
   source: string
 }
 
-/** Saved by the user and persisted in localStorage (save flow not built yet). */
+/** Saved by the user via the Create Prompt form; persisted in localStorage. */
 export interface UserPrompt extends PromptBase {
   origin: 'user'
+  category?: CategoryId
   source?: string
-  /** ISO 8601 timestamp */
+  /** ISO 8601 timestamps */
   createdAt: string
+  updatedAt: string
 }
 
 export type Prompt = BuiltInPrompt | UserPrompt
+
+/** Fields the Create/Edit Prompt form collects. */
+export type UserPromptInput = Pick<UserPrompt, 'title' | 'description' | 'tags' | 'body' | 'category'>

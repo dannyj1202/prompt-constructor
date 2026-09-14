@@ -1,6 +1,7 @@
 import { cn } from '../../lib/cn'
 import type { Category, CategoryId } from '../../types/prompt'
-import { TagList } from './tag-list'
+import { SidebarSection } from '../layout/sidebar-section'
+import { TagList } from '../ui/tag-list'
 
 interface CategorySidebarProps {
   categories: Category[]
@@ -67,10 +68,9 @@ export function CategorySidebar({
       </nav>
 
       {tags.length > 0 && (
-        <section className="hidden lg:block">
-          <h2 className="mb-2 px-3 text-xs font-semibold tracking-wide text-zinc-500 uppercase">Tags</h2>
+        <SidebarSection title="Tags" className="hidden lg:block">
           <TagList tags={tags} activeTag={activeTag} onTagClick={onTagClick} className="px-3" />
-        </section>
+        </SidebarSection>
       )}
     </div>
   )
