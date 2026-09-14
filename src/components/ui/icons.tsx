@@ -108,3 +108,90 @@ export function ArrowLeftIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function GridIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </Icon>
+  )
+}
+
+export function FlagIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M5 3v18M5 4h11l-2 4 2 4H5" />
+    </Icon>
+  )
+}
+
+export function GitBranchIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="7" cy="6" r="2" />
+      <circle cx="7" cy="18" r="2" />
+      <circle cx="17" cy="6" r="2" />
+      <path d="M7 8v8M9 6h4a4 4 0 0 1 4 4v0" />
+    </Icon>
+  )
+}
+
+export function PackageIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M21 8 12 3 3 8l9 5 9-5Z" />
+      <path d="M3 8v8l9 5 9-5V8" />
+      <path d="M12 13v8" />
+    </Icon>
+  )
+}
+
+export function LayersIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M12 3 3 8l9 5 9-5-9-5Z" />
+      <path d="m3 13 9 5 9-5" />
+    </Icon>
+  )
+}
+
+export function SwatchIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="3" width="18" height="18" rx="4" />
+      <circle cx="8" cy="9" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="9" r="1.4" fill="currentColor" stroke="none" />
+      <circle cx="16" cy="9" r="1.4" fill="currentColor" stroke="none" />
+      <path d="M7 15h10" />
+    </Icon>
+  )
+}
+
+export function GlobeIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
+    </Icon>
+  )
+}
+
+export function BugIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="8" y="8" width="8" height="10" rx="4" />
+      <path d="M8 12H4M16 12h4M9 8 7 5M15 8l2-3M12 8V5M9 18l-2 3M15 18l2 3" />
+    </Icon>
+  )
+}
+
+export function BarChartIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M4 20V10M12 20V4M20 20v-7" />
+    </Icon>
+  )
+}

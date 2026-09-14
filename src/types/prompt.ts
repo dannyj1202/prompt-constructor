@@ -8,10 +8,14 @@ export type CategoryId =
   | 'investigation-debugging'
   | 'analytics'
 
+/** Tailwind color used for a category's sidebar icon, tint, and active state. */
+export type CategoryAccent = 'emerald' | 'violet' | 'amber' | 'cyan' | 'pink' | 'sky' | 'rose' | 'lime'
+
 export interface Category {
   id: CategoryId
   name: string
   description: string
+  accent: CategoryAccent
 }
 
 interface PromptBase {
