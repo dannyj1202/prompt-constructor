@@ -1,4 +1,5 @@
 import type { ComponentType, SVGProps } from 'react'
+import { CATEGORY_ACCENT_TEXT } from '../../data/categories'
 import { cn } from '../../lib/cn'
 import type { Category, CategoryAccent, CategoryId } from '../../types/prompt'
 import { SidebarSection } from '../layout/sidebar-section'
@@ -41,7 +42,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   emerald: {
     iconBg: 'bg-emerald-100 dark:bg-emerald-500/15',
-    iconText: 'text-emerald-600 dark:text-emerald-400',
+    iconText: CATEGORY_ACCENT_TEXT.emerald,
     activeBg: 'bg-emerald-50 dark:bg-emerald-500/10',
     activeText: 'text-emerald-950 dark:text-emerald-100',
     countBg: 'bg-emerald-100 dark:bg-emerald-500/20',
@@ -49,7 +50,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   violet: {
     iconBg: 'bg-violet-100 dark:bg-violet-500/15',
-    iconText: 'text-violet-600 dark:text-violet-400',
+    iconText: CATEGORY_ACCENT_TEXT.violet,
     activeBg: 'bg-violet-50 dark:bg-violet-500/10',
     activeText: 'text-violet-950 dark:text-violet-100',
     countBg: 'bg-violet-100 dark:bg-violet-500/20',
@@ -57,7 +58,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   amber: {
     iconBg: 'bg-amber-100 dark:bg-amber-500/15',
-    iconText: 'text-amber-600 dark:text-amber-400',
+    iconText: CATEGORY_ACCENT_TEXT.amber,
     activeBg: 'bg-amber-50 dark:bg-amber-500/10',
     activeText: 'text-amber-950 dark:text-amber-100',
     countBg: 'bg-amber-100 dark:bg-amber-500/20',
@@ -65,7 +66,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   cyan: {
     iconBg: 'bg-cyan-100 dark:bg-cyan-500/15',
-    iconText: 'text-cyan-600 dark:text-cyan-400',
+    iconText: CATEGORY_ACCENT_TEXT.cyan,
     activeBg: 'bg-cyan-50 dark:bg-cyan-500/10',
     activeText: 'text-cyan-950 dark:text-cyan-100',
     countBg: 'bg-cyan-100 dark:bg-cyan-500/20',
@@ -73,7 +74,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   pink: {
     iconBg: 'bg-pink-100 dark:bg-pink-500/15',
-    iconText: 'text-pink-600 dark:text-pink-400',
+    iconText: CATEGORY_ACCENT_TEXT.pink,
     activeBg: 'bg-pink-50 dark:bg-pink-500/10',
     activeText: 'text-pink-950 dark:text-pink-100',
     countBg: 'bg-pink-100 dark:bg-pink-500/20',
@@ -81,7 +82,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   sky: {
     iconBg: 'bg-sky-100 dark:bg-sky-500/15',
-    iconText: 'text-sky-600 dark:text-sky-400',
+    iconText: CATEGORY_ACCENT_TEXT.sky,
     activeBg: 'bg-sky-50 dark:bg-sky-500/10',
     activeText: 'text-sky-950 dark:text-sky-100',
     countBg: 'bg-sky-100 dark:bg-sky-500/20',
@@ -89,7 +90,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   rose: {
     iconBg: 'bg-rose-100 dark:bg-rose-500/15',
-    iconText: 'text-rose-600 dark:text-rose-400',
+    iconText: CATEGORY_ACCENT_TEXT.rose,
     activeBg: 'bg-rose-50 dark:bg-rose-500/10',
     activeText: 'text-rose-950 dark:text-rose-100',
     countBg: 'bg-rose-100 dark:bg-rose-500/20',
@@ -97,7 +98,7 @@ const ACCENT_STYLES: Record<CategoryAccent | 'neutral', { iconBg: string; iconTe
   },
   lime: {
     iconBg: 'bg-lime-100 dark:bg-lime-500/15',
-    iconText: 'text-lime-600 dark:text-lime-400',
+    iconText: CATEGORY_ACCENT_TEXT.lime,
     activeBg: 'bg-lime-50 dark:bg-lime-500/10',
     activeText: 'text-lime-950 dark:text-lime-100',
     countBg: 'bg-lime-100 dark:bg-lime-500/20',
@@ -197,7 +198,7 @@ export function CategorySidebar({
                   <span
                     className={cn(
                       'shrink-0 rounded-full px-1.5 py-0.5 text-xs tabular-nums',
-                      active ? cn(style.countBg, style.countText) : 'bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400',
+                      active ? cn(style.countBg, style.countText) : 'bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400',
                     )}
                   >
                     {item.count}

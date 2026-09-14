@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { templateVariables } from '../../lib/formatContent'
 import type { Prompt, UserPrompt } from '../../types/prompt'
 import { HistoryBadge } from '../history/history-badge'
@@ -35,7 +36,7 @@ export function PromptCard({
   onDelete,
   onHistory,
 }: PromptCardProps) {
-  const variables = templateVariables(prompt.body)
+  const variables = useMemo(() => templateVariables(prompt.body), [prompt.body])
 
   return (
     <ContentCard
@@ -82,7 +83,7 @@ export function PromptCard({
           {variables.map((name) => (
             <li
               key={name}
-              className="rounded-md border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-indigo-700 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-300"
+              className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 font-mono text-xs font-medium text-indigo-700 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-300"
             >
               [{name}]
             </li>
@@ -124,7 +125,7 @@ export function PromptControls({
           title="View edit history"
           className="text-amber-500 hover:text-amber-600 dark:text-amber-400"
         >
-          <span className="text-[11px] font-mono">v{versionNumber}</span>
+          <span className="font-mono text-xs">v{versionNumber}</span>
           {labelled && `History (${totalRevisions ?? versionNumber})`}
         </Button>
       )}

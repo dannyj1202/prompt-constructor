@@ -19,7 +19,7 @@ export function StarButton({ isStarred, onToggle, label, className }: StarButton
       title={isStarred ? 'Remove from favorites' : 'Add to favorites'}
       aria-label={isStarred ? 'Remove from favorites' : 'Add to favorites'}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border p-1 text-xs font-medium transition-all',
+        'inline-flex min-h-[32px] min-w-[32px] items-center justify-center gap-1.5 rounded-md border p-1 text-xs font-medium transition-all',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500',
         isStarred
           ? 'border-amber-400/40 bg-amber-50 text-amber-500 hover:bg-amber-100 dark:bg-amber-500/15 dark:text-amber-400 dark:hover:bg-amber-500/25'

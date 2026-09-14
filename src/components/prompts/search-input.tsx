@@ -53,9 +53,10 @@ export function SearchInput({ value, onChange, placeholder = 'Search…' }: Sear
         className="h-10 w-full rounded-lg border border-zinc-200 bg-white pr-10 pl-9 text-sm outline-none placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-800 dark:bg-zinc-900"
       />
       {!value && (
-        <kbd className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 rounded border border-zinc-200 px-1.5 font-mono text-[10px] text-zinc-400 sm:block dark:border-zinc-700">
-          /
-        </kbd>
+        <div className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 items-center gap-2 sm:flex">
+          <kbd className="hidden font-mono text-xs text-zinc-400 lg:inline dark:text-zinc-500">↑↓ or j/k to navigate</kbd>
+          <kbd className="rounded border border-zinc-200 px-1.5 font-mono text-[10px] text-zinc-400 dark:border-zinc-700">/</kbd>
+        </div>
       )}
     </div>
   )

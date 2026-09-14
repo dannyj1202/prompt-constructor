@@ -119,8 +119,8 @@ export function ContentCard({
           {(source || footer) && (
             <div className="flex items-center justify-between gap-3">
               {source ? (
-                <p className="min-w-0 truncate text-xs text-zinc-500" title={source}>
-                  Source: <code className="font-mono">{source}</code>
+                <p className="min-w-0 flex-1 truncate text-xs text-zinc-500" title={source}>
+                  Source: <code className="inline-block max-w-full truncate align-bottom font-mono">{source}</code>
                 </p>
               ) : (
                 <span />

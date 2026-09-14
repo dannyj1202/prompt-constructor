@@ -1,4 +1,4 @@
-import type { Category, CategoryId } from '../types/prompt'
+import type { Category, CategoryAccent, CategoryId } from '../types/prompt'
 
 export const CATEGORIES: Category[] = [
   {
@@ -54,6 +54,22 @@ export const CATEGORIES: Category[] = [
 export const CATEGORY_BY_ID = Object.fromEntries(
   CATEGORIES.map((category) => [category.id, category]),
 ) as Record<CategoryId, Category>
+
+/**
+ * Per-category accent text color, shared by the sidebar's icon badges and the
+ * card eyebrow label. Literal class strings so Tailwind's build-time scanner
+ * can find them.
+ */
+export const CATEGORY_ACCENT_TEXT: Record<CategoryAccent, string> = {
+  emerald: 'text-emerald-600 dark:text-emerald-400',
+  violet: 'text-violet-600 dark:text-violet-400',
+  amber: 'text-amber-600 dark:text-amber-400',
+  cyan: 'text-cyan-600 dark:text-cyan-400',
+  pink: 'text-pink-600 dark:text-pink-400',
+  sky: 'text-sky-600 dark:text-sky-400',
+  rose: 'text-rose-600 dark:text-rose-400',
+  lime: 'text-lime-600 dark:text-lime-400',
+}
 
 /** Validates untrusted input such as a `?category=` URL param. */
 export function isCategoryId(value: string | null | undefined): value is CategoryId {

@@ -1,0 +1,202 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-09-14T00:00:00Z",
+  "title": "Design System: Prompt Constructor",
+  "extensions": {
+    "colorMeta": {
+      "signal-indigo": {
+        "role": "primary",
+        "displayName": "Signal Indigo",
+        "canonical": "#4f46e5",
+        "tonalRamp": ["#312e81", "#3730a3", "#4338ca", "#4f46e5", "#6366f1", "#818cf8", "#a5b4fc", "#c7d2fe"]
+      },
+      "emerald": {
+        "role": "category",
+        "displayName": "Emerald (Onboarding & Setup)",
+        "canonical": "#10b981",
+        "tonalRamp": ["#064e3b", "#065f46", "#047857", "#059669", "#10b981", "#34d399", "#6ee7b7", "#a7f3d0"]
+      },
+      "violet": {
+        "role": "category",
+        "displayName": "Violet (Git & PR Workflow)",
+        "canonical": "#8b5cf6",
+        "tonalRamp": ["#4c1d95", "#5b21b6", "#6d28d9", "#7c3aed", "#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe"]
+      },
+      "amber": {
+        "role": "category",
+        "displayName": "Amber (Release & Dependencies / Favorites & History)",
+        "canonical": "#f59e0b",
+        "tonalRamp": ["#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#fbbf24", "#fcd34d", "#fde68a"]
+      },
+      "cyan": {
+        "role": "category",
+        "displayName": "Cyan (Code Scaffolding)",
+        "canonical": "#06b6d4",
+        "tonalRamp": ["#164e63", "#155e75", "#0e7490", "#0891b2", "#06b6d4", "#22d3ee", "#67e8f9", "#a5f3fc"]
+      },
+      "pink": {
+        "role": "category",
+        "displayName": "Pink (UI & Design System)",
+        "canonical": "#ec4899",
+        "tonalRamp": ["#831843", "#9d174d", "#be185d", "#db2777", "#ec4899", "#f472b6", "#f9a8d4", "#fbcfe8"]
+      },
+      "sky": {
+        "role": "category",
+        "displayName": "Sky (Content & i18n)",
+        "canonical": "#0ea5e9",
+        "tonalRamp": ["#0c4a6e", "#075985", "#0369a1", "#0284c7", "#0ea5e9", "#38bdf8", "#7dd3fc", "#bae6fd"]
+      },
+      "rose": {
+        "role": "category",
+        "displayName": "Rose (Investigation & Debugging)",
+        "canonical": "#f43f5e",
+        "tonalRamp": ["#881337", "#9f1239", "#be123c", "#e11d48", "#f43f5e", "#fb7185", "#fda4af", "#fecdd3"]
+      },
+      "lime": {
+        "role": "category",
+        "displayName": "Lime (Analytics)",
+        "canonical": "#84cc16",
+        "tonalRamp": ["#365314", "#3f6212", "#4d7c0f", "#65a30d", "#84cc16", "#a3e635", "#bef264", "#d9f99d"]
+      },
+      "canvas": {
+        "role": "neutral",
+        "displayName": "Obsidian Canvas",
+        "canonical": "#090a0c",
+        "tonalRamp": ["#090a0c", "#0c0d0f", "#111215"]
+      },
+      "canvas-inset": {
+        "role": "neutral",
+        "displayName": "Canvas Inset",
+        "canonical": "#0c0d0f"
+      },
+      "canvas-card": {
+        "role": "neutral",
+        "displayName": "Canvas Card",
+        "canonical": "#111215"
+      },
+      "danger-red": {
+        "role": "danger",
+        "displayName": "Danger Red",
+        "canonical": "#dc2626",
+        "tonalRamp": ["#7f1d1d", "#991b1b", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fecaca"]
+      }
+    },
+    "typographyMeta": {
+      "heading": { "displayName": "Heading", "purpose": "Page titles (h1) only, one per page." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, prose, form labels." },
+      "label": { "displayName": "Label", "purpose": "Eyebrows, section headings, badges." },
+      "mono": { "displayName": "Mono", "purpose": "Prompt bodies, variable chips, source citations, version badges, keyboard hints." }
+    },
+    "shadows": [
+      { "name": "card-rest", "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)", "purpose": "Light-mode card at rest (shadow-sm)." },
+      { "name": "card-hover", "value": "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)", "purpose": "Light-mode card on hover (shadow-md)." },
+      { "name": "button-inset", "value": "inset 0 1px 0 rgba(255,255,255,0.15)", "purpose": "Bevel highlight inside primary/secondary buttons." },
+      { "name": "modal", "value": "0 25px 50px -12px rgb(0 0 0 / 0.25)", "purpose": "Dialog elevation above the backdrop scrim, both themes (shadow-2xl)." }
+    ],
+    "motion": [
+      { "name": "press", "value": "translateY(1px)", "purpose": "Active/press state on buttons and copy actions." },
+      { "name": "spotlight-fade", "value": "opacity 300ms ease", "purpose": "Card spotlight glow fade in/out on hover." },
+      { "name": "state-transition", "value": "background-color/border-color 150ms ease", "purpose": "Default hover/active color transitions across controls." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Signal Indigo fill with inset bevel highlight and press-down feedback.",
+      "html": "<button class=\"ds-btn-primary\">Create Prompt</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 500; font-size: 0.875rem; padding: 6px 12px; border-radius: 8px; background: #4f46e5; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); border: none; transition: background-color 150ms ease; } .ds-btn-primary:hover { background: #6366f1; } .ds-btn-primary:active { transform: translateY(1px); box-shadow: none; } .ds-btn-primary:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; } .ds-btn-primary:disabled { background: rgba(79,70,229,0.5); box-shadow: none; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Bordered neutral button, same bevel and press behavior as primary.",
+      "html": "<button class=\"ds-btn-secondary\">Cancel</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-weight: 500; font-size: 0.875rem; padding: 6px 12px; border-radius: 8px; background: #fff; color: #3f3f46; border: 1px solid #e4e4e7; box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); transition: background-color 150ms ease; } .ds-btn-secondary:hover { background: #f4f4f5; } .ds-btn-secondary:active { transform: translateY(1px); box-shadow: none; } .ds-btn-secondary:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Icon Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Text-only control for compact card actions (edit, delete, history).",
+      "html": "<button class=\"ds-btn-ghost\" aria-label=\"Edit\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M12 20h9\"/><path d=\"M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z\"/></svg></button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; padding: 6px; border-radius: 8px; background: transparent; color: #71717a; border: none; transition: background-color 150ms ease, color 150ms ease; } .ds-btn-ghost:hover { background: #f4f4f5; color: #18181b; } .ds-btn-ghost:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }"
+    },
+    {
+      "name": "Tag Pill",
+      "kind": "chip",
+      "refersTo": "tag-pill",
+      "description": "Filterable tag chip; fills Signal Indigo when active.",
+      "html": "<button class=\"ds-tag\">#git</button> <button class=\"ds-tag ds-tag--active\">#pr</button>",
+      "css": ".ds-tag { border-radius: 9999px; padding: 2px 8px; font-size: 0.75rem; background: #f4f4f5; color: #52525b; border: none; transition: background-color 150ms ease; } .ds-tag:hover { background: #e4e4e7; } .ds-tag--active { background: #4f46e5; color: #fff; } .ds-tag:focus-visible { outline: 2px solid #6366f1; outline-offset: 1px; }"
+    },
+    {
+      "name": "Spotlight Content Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "The system's signature card: cursor-tracking radial spotlight flood + masked border ring on hover.",
+      "html": "<article class=\"ds-card\" onmousemove=\"const r=this.getBoundingClientRect();this.style.setProperty('--x',(event.clientX-r.left)+'px');this.style.setProperty('--y',(event.clientY-r.top)+'px')\"><div class=\"ds-card-spot\"></div><div class=\"ds-card-ring\"></div><h3 class=\"ds-card-title\">Set up the local dev environment</h3><p class=\"ds-card-desc\">Turn the setup docs into an ordered checklist.</p></article>",
+      "css": ".ds-card { position: relative; border-radius: 12px; border: 1px solid #e4e4e7; background: #fff; padding: 16px; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); transition: box-shadow 150ms ease, border-color 150ms ease; } .ds-card:hover { border-color: #d4d4d8; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); } .ds-card-spot, .ds-card-ring { position: absolute; inset: 0; border-radius: 12px; pointer-events: none; opacity: 0; transition: opacity 300ms ease; } .ds-card:hover .ds-card-spot, .ds-card:hover .ds-card-ring { opacity: 1; } .ds-card-spot { background: radial-gradient(360px circle at var(--x, 50%) var(--y, 50%), rgb(99 102 241 / 0.1), transparent 70%); } .ds-card-ring { padding: 1px; background: radial-gradient(360px circle at var(--x, 50%) var(--y, 50%), rgb(99 102 241 / 0.55), transparent 70%); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; } .ds-card-title { font-weight: 600; font-size: 0.875rem; margin: 0 0 8px; position: relative; } .ds-card-desc { font-size: 0.875rem; color: #52525b; margin: 0; position: relative; }"
+    },
+    {
+      "name": "Category Icon Badge",
+      "kind": "custom",
+      "refersTo": "category-icon-badge",
+      "description": "Small tinted square badge pairing a category's accent color with its icon, used in the sidebar.",
+      "html": "<span class=\"ds-cat-badge\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.25\"><path d=\"M4 4h16v16H4z\"/></svg></span>",
+      "css": ".ds-cat-badge { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 8px; background: #d1fae5; color: #059669; flex-shrink: 0; }"
+    },
+    {
+      "name": "Modal Dialog",
+      "kind": "custom",
+      "refersTo": "modal",
+      "description": "Native dialog element with header/body/footer, hairline dividers, and a blurred scrim.",
+      "html": "<div class=\"ds-modal-scrim\"><div class=\"ds-modal\"><header class=\"ds-modal-header\"><h2 class=\"ds-modal-title\">Create Prompt</h2><button class=\"ds-btn-ghost\" aria-label=\"Close\">×</button></header><div class=\"ds-modal-body\">Form content…</div><footer class=\"ds-modal-footer\"><button class=\"ds-btn-secondary\">Cancel</button><button class=\"ds-btn-primary\">Save</button></footer></div></div>",
+      "css": ".ds-modal-scrim { background: rgba(9,9,11,0.5); backdrop-filter: blur(4px); display: grid; place-items: center; padding: 16px; } .ds-modal { width: min(48rem, calc(100vw - 2rem)); border-radius: 16px; background: #fff; box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25); overflow: hidden; } .ds-modal-header, .ds-modal-footer { display: flex; align-items: center; justify-content: space-between; padding: 20px; border-bottom: 1px solid #e4e4e7; } .ds-modal-footer { border-bottom: none; border-top: 1px solid #e4e4e7; } .ds-modal-title { font-size: 1.125rem; font-weight: 600; margin: 0; } .ds-modal-body { padding: 20px; font-size: 0.875rem; }"
+    },
+    {
+      "name": "Copy Button",
+      "kind": "button",
+      "refersTo": "copy-button",
+      "description": "Bordered micro-button that morphs icon/color through idle → copied → error states.",
+      "html": "<button class=\"ds-copy\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"9\" y=\"9\" width=\"13\" height=\"13\" rx=\"2\"/><path d=\"M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1\"/></svg>Copy</button>",
+      "css": ".ds-copy { display: inline-flex; align-items: center; gap: 6px; border-radius: 8px; border: 1px solid #e4e4e7; background: #fff; color: #3f3f46; padding: 4px 10px; font-size: 0.75rem; font-weight: 500; transition: background-color 150ms ease; } .ds-copy:hover { background: #f4f4f5; } .ds-copy:active { transform: translateY(1px); } .ds-copy--copied { border-color: rgba(16,185,129,0.4); background: #ecfdf5; color: #047857; } .ds-copy:focus-visible { outline: 2px solid #6366f1; outline-offset: 2px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Obsidian Canvas",
+    "overview": "Quiet and confident: a dark, layered workspace for engineers who want to find a prompt and copy it, not admire the chrome. The canvas is genuinely dark (#090a0c), not a tinted grey, with a faint dot-matrix texture underneath so it reads as a precision surface rather than a flat void. Depth comes from stacking three surface tones — canvas, card, inset — and 1px border highlights, not from decorative shadows or gradient blobs. Color is spent deliberately: Signal Indigo carries every primary action and active state, category accents (emerald, violet, amber, cyan, pink, sky, rose, lime) each own exactly one category's identity, and everything else stays neutral zinc. The one moment of overt craft is the cursor-tracking spotlight glow on cards and the liquid-metal header badge — both purposeful accents on an otherwise restrained surface, not a running motif.",
+    "keyCharacteristics": [
+      "Dark-first obsidian canvas with light-mode as a first-class mirror, not an afterthought",
+      "Tonal layering (three surface depths + hairline borders) instead of shadows in dark mode",
+      "One accent color for interaction (Signal Indigo), category color reserved strictly for category identity",
+      "Tactile, mechanical feedback on every press: translate, glow, or state-morph, never a static hover",
+      "Density over decoration: this is a browse-and-copy tool, not a marketing surface"
+    ],
+    "rules": [
+      { "name": "The Single Accent Rule", "body": "Signal Indigo is the only color used to mean \"interactive / primary / focused.\" Every other color on screen means something else specific: a category, a favorite/history state, or a destructive action.", "section": "colors" },
+      { "name": "The Mono-Means-Data Rule", "body": "Monospace type signals \"this is literal, copyable content\" — prompt bodies, variable tokens, source paths, version numbers. Never use it for decorative or purely stylistic emphasis.", "section": "typography" },
+      { "name": "The Tonal-Not-Cast Rule", "body": "In dark mode, express elevation by moving a surface to a lighter/darker layer token and brightening its border — never by adding a drop shadow. Reserve real cast shadows for light mode and for anything genuinely floating above the page (modals).", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use Signal Indigo only for primary/interactive meaning (actions, active states, focus) — never as a decorative fill.",
+      "Do express dark-mode depth by moving a surface between the three layer tokens (canvas / canvas-card / canvas-inset) plus a border-brightness step, not a shadow.",
+      "Do give every interactive control a visible focus-visible treatment (outline or ring in Signal Indigo) — buttons, links, nav items, tags, and inputs all already do this; new controls must match.",
+      "Do give pressed buttons a one-pixel downward nudge (active:translate-y-px) and drop any inset highlight on press, so pressing reads as physically real.",
+      "Do keep one category accent color per category, applied consistently to its icon badge, active background, and count pill together — never split a category's identity across two colors."
+    ],
+    "donts": [
+      "Don't add drop shadows for dark-mode depth; the system's entire dark elevation model is tonal layering + borders, and a shadow there will look like a mistake, not a design choice.",
+      "Don't introduce a new hue outside the established set (Signal Indigo, the 8 category accents, amber-as-semantic, red-as-danger) without a specific semantic reason — this palette is deliberately closed.",
+      "Don't apply the cursor-tracking spotlight glow to anything other than browsable content cards; it's a signature reserved for that one component, not a general-purpose hover effect.",
+      "Don't let a hover state be the only feedback on something clickable — pair it with a focus-visible state and, for buttons, a press state; static hover-only interactivity breaks the \"tactile and mechanical\" component philosophy."
+    ]
+  }
+}

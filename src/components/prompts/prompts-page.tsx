@@ -8,6 +8,7 @@ import { href, navigate, updateParams, type Route } from '../../lib/router'
 import { countByTag } from '../../lib/search'
 import type { Prompt } from '../../types/prompt'
 import { BrowseLayout } from '../layout/browse-layout'
+import { PageHeading } from '../layout/page-heading'
 import { Button } from '../ui/button'
 import { useEntityHistory } from '../../hooks/useEntityHistory'
 import { CardGrid, EmptyState } from '../ui/card-grid'
@@ -55,7 +56,8 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
     onOpen: actions.onOpen,
     onCopy: (prompt) => copy(prompt.body),
   })
-  const activeId = visible[activeIndex]?.id
+  const activePrompt = visible[activeIndex]
+  const activeId = activePrompt?.id
 
   const toggleTag = (next: string) => updateParams(route, { tag: tag === next ? null : next })
   const clearFilters = () => navigate(href(route.path), { replace: true })
@@ -63,7 +65,11 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
   return (
     <>
       <CopyToast status={copyStatus} />
+      <div aria-live="polite" className="sr-only">
+        {activePrompt ? `${activePrompt.title} highlighted` : ''}
+      </div>
       <BrowseLayout
+        heading={<PageHeading title="Prompts" description="Browse, search, and copy developer convention prompts." />}
         sidebar={
           <CategorySidebar
             categories={CATEGORIES}

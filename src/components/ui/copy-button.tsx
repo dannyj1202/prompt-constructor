@@ -17,7 +17,7 @@ export function CopyButton({ text, label = 'Copy', className }: CopyButtonProps)
       type="button"
       onClick={() => copy(text)}
       className={cn(
-        'inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition active:translate-y-px',
+        'inline-flex min-h-[32px] min-w-[32px] items-center justify-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition active:translate-y-px',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500',
         copied
           ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
