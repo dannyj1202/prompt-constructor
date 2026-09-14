@@ -9,4 +9,10 @@ export interface TasteEntry {
   source: string
   /** A single markdown block, copied as-is. */
   body: string
+  origin?: 'builtin' | 'user'
+  createdAt?: string
+  updatedAt?: string
 }
+
+export type UserTasteInput = Omit<TasteEntry, 'id' | 'origin' | 'createdAt' | 'updatedAt'>
+

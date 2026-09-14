@@ -10,4 +10,10 @@ export interface Skill {
   source: string
   /** Markdown body of SKILL.md (everything after the frontmatter). */
   body: string
+  origin?: 'builtin' | 'user'
+  createdAt?: string
+  updatedAt?: string
 }
+
+export type UserSkillInput = Omit<Skill, 'origin' | 'createdAt' | 'updatedAt'>
+

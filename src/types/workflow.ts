@@ -12,4 +12,11 @@ export interface Workflow {
   title: string
   description: string
   steps: WorkflowStep[]
+  tags?: string[]
+  origin?: 'builtin' | 'user'
+  createdAt?: string
+  updatedAt?: string
 }
+
+export type UserWorkflowInput = Omit<Workflow, 'id' | 'origin' | 'createdAt' | 'updatedAt'>
+

@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import { CATEGORIES, CATEGORY_BY_ID, isCategoryId } from '../../data/categories'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import { useGridKeyboardNav } from '../../hooks/useGridKeyboardNav'
+import { useStarredPrompts } from '../../hooks/useStarredPrompts'
 import { countByCategory, filterPrompts } from '../../lib/filterPrompts'
 import { href, navigate, updateParams, type Route } from '../../lib/router'
 import { countByTag } from '../../lib/search'
@@ -25,6 +26,9 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
   const rawCategory = route.params.get('category')
   const category = isCategoryId(rawCategory) ? rawCategory : null
   const tag = route.params.get('tag')
+  const starredOnly = route.params.get('starred') === '1'
+
+  const { isStarred, toggleStar, starredIds } = useStarredPrompts()
 
   const allTags = useMemo(() => countByTag(prompts).map(([t]) => t), [prompts])
   // Sidebar counts ignore the selected category so they show where matches live.
@@ -32,9 +36,15 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
     () => filterPrompts(prompts, { query, tag, category: null }),
     [prompts, query, tag],
   )
-  const visible = useMemo(
-    () => (category ? matchesInAnyCategory.filter((p) => p.category === category) : matchesInAnyCategory),
-    [matchesInAnyCategory, category],
+  const visible = useMemo(() => {
+    let result = category ? matchesInAnyCategory.filter((p) => p.category === category) : matchesInAnyCategory
+    if (starredOnly) result = result.filter((p) => starredIds.has(p.id))
+    return result
+  }, [matchesInAnyCategory, category, starredOnly, starredIds])
+
+  const starredCount = useMemo(
+    () => matchesInAnyCategory.filter((p) => starredIds.has(p.id)).length,
+    [matchesInAnyCategory, starredIds],
   )
 
   const { copy, status: copyStatus } = useCopyToClipboard()
@@ -58,27 +68,35 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
             counts={countByCategory(matchesInAnyCategory)}
             total={matchesInAnyCategory.length}
             selected={category}
-            onSelect={(id) => updateParams(route, { category: id })}
+            onSelect={(id) => updateParams(route, { category: id, starred: null })}
             tags={allTags}
             activeTag={tag}
             onTagClick={toggleTag}
+            starredOnly={starredOnly}
+            onToggleStarredOnly={() => updateParams(route, { starred: starredOnly ? null : '1', category: null })}
+            starredCount={starredCount}
           />
         }
         count={visible.length}
         noun={['prompt', 'prompts']}
         context={
-          category && (
+          starredOnly ? (
+            <>
+              {' in '}
+              <strong className="font-medium text-amber-600 dark:text-amber-400">Favorites</strong>
+            </>
+          ) : category ? (
             <>
               {' in '}
               <strong className="font-medium text-zinc-900 dark:text-zinc-100">
                 {CATEGORY_BY_ID[category].name}
               </strong>
             </>
-          )
+          ) : undefined
         }
         activeTag={tag}
         onClearTag={() => updateParams(route, { tag: null })}
-        hasFilters={Boolean(query || category || tag)}
+        hasFilters={Boolean(query || category || tag || starredOnly)}
         onClearFilters={clearFilters}
       >
         {visible.length > 0 ? (
@@ -91,6 +109,8 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
                 activeTag={tag}
                 onTagClick={toggleTag}
                 highlighted={prompt.id === activeId}
+                isStarred={isStarred(prompt.id)}
+                onToggleStar={() => toggleStar(prompt.id)}
                 {...actions}
               />
             )}

@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard'
 import { useGridKeyboardNav } from '../../hooks/useGridKeyboardNav'
+import { useStarredPrompts } from '../../hooks/useStarredPrompts'
 import { filterPrompts } from '../../lib/filterPrompts'
 import { href, navigate, updateParams, type Route } from '../../lib/router'
 import { countByTag } from '../../lib/search'
@@ -25,6 +26,8 @@ interface SavedPromptsPageProps extends PromptActions {
 export function SavedPromptsPage({ route, prompts, onCreate, ...actions }: SavedPromptsPageProps) {
   const query = route.params.get('q') ?? ''
   const tag = route.params.get('tag')
+
+  const { isStarred, toggleStar } = useStarredPrompts()
 
   const tagCounts = useMemo(() => countByTag(prompts), [prompts])
   const visible = useMemo(() => filterPrompts(prompts, { query, tag, category: null }), [prompts, query, tag])
@@ -71,7 +74,7 @@ export function SavedPromptsPage({ route, prompts, onCreate, ...actions }: Saved
           )
         }
         count={visible.length}
-        noun={['saved prompt', 'saved prompts']}
+        noun={['prompt', 'prompts']}
         activeTag={tag}
         onClearTag={() => updateParams(route, { tag: null })}
         hasFilters={Boolean(query || tag)}
@@ -98,6 +101,8 @@ export function SavedPromptsPage({ route, prompts, onCreate, ...actions }: Saved
                 activeTag={tag}
                 onTagClick={toggleTag}
                 highlighted={prompt.id === activeId}
+                isStarred={isStarred(prompt.id)}
+                onToggleStar={() => toggleStar(prompt.id)}
                 {...actions}
               />
             )}

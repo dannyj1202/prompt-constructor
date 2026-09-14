@@ -15,6 +15,7 @@ import { WorkflowDetailPage } from './components/workflows/workflow-detail-page'
 import { WorkflowsPage } from './components/workflows/workflows-page'
 import { BUILT_IN_PROMPTS } from './data/prompts'
 import { useSavedPrompts } from './hooks/useSavedPrompts'
+import { useStarredPrompts } from './hooks/useStarredPrompts'
 import { syncSavedPromptsToMcp } from './lib/mcpSync'
 import { href, navigate, updateParams, useHashRoute } from './lib/router'
 import { getSavedPrompts } from './lib/savedPromptsStorage'
@@ -32,6 +33,7 @@ const SEARCH_PLACEHOLDERS: Record<string, string> = {
 export default function App() {
   const route = useHashRoute()
   const { prompts: savedPrompts, create, update, remove } = useSavedPrompts()
+  const { isStarred, toggleStar } = useStarredPrompts()
 
   // Saved prompts first so your own work sits at the top of the library.
   const allPrompts = useMemo<Prompt[]>(() => [...savedPrompts, ...BUILT_IN_PROMPTS], [savedPrompts])
@@ -129,6 +131,8 @@ export default function App() {
         <PromptDetailDialog
           prompt={openPrompt}
           activeTag={route.params.get('tag')}
+          isStarred={isStarred(openPrompt.id)}
+          onToggleStar={() => toggleStar(openPrompt.id)}
           onClose={() => setOpenPromptId(null)}
           onTagClick={(tag) => {
             setOpenPromptId(null)

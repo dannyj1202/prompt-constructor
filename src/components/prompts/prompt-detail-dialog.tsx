@@ -3,6 +3,7 @@ import { fillTemplate, templateVariables } from '../../lib/formatContent'
 import type { Prompt } from '../../types/prompt'
 import { CopyButton } from '../ui/copy-button'
 import { DetailDialog } from '../ui/detail-dialog'
+import { StarButton } from '../ui/star-button'
 import { INPUT_CLASS } from './prompt-form-dialog'
 import type { PromptActions } from './prompt-actions'
 import { SavedPromptControls } from './prompt-card'
@@ -13,6 +14,8 @@ interface PromptDetailDialogProps extends Pick<PromptActions, 'onEdit' | 'onDele
   activeTag: string | null
   onClose: () => void
   onTagClick: (tag: string) => void
+  isStarred?: boolean
+  onToggleStar?: () => void
 }
 
 /** Splits `body` on `{{VARIABLE}}` tokens, keeping the tokens so each segment can be styled. */
@@ -29,6 +32,8 @@ export function PromptDetailDialog({
   activeTag,
   onClose,
   onTagClick,
+  isStarred = false,
+  onToggleStar,
   onEdit,
   onDelete,
 }: PromptDetailDialogProps) {
@@ -92,6 +97,7 @@ export function PromptDetailDialog({
       }
       actions={
         <>
+          {onToggleStar && <StarButton isStarred={isStarred} onToggle={onToggleStar} label={isStarred ? 'Favorited' : 'Favorite'} className="px-2.5 py-1.5 text-xs" />}
           {prompt.origin === 'user' && (
             <SavedPromptControls prompt={prompt} onEdit={onEdit} onDelete={onDelete} labelled />
           )}

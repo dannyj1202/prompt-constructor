@@ -1,4 +1,5 @@
 import { WORKFLOWS } from '../../data/workflows'
+import { useSavedWorkflows } from '../../hooks/useSavedWorkflows'
 import { href } from '../../lib/router'
 import type { Prompt } from '../../types/prompt'
 import { PageHeading } from '../layout/page-heading'
@@ -12,7 +13,8 @@ interface WorkflowDetailPageProps {
 }
 
 export function WorkflowDetailPage({ workflowId, promptsById }: WorkflowDetailPageProps) {
-  const workflow = WORKFLOWS.find((w) => w.id === workflowId)
+  const { workflows: userWorkflows } = useSavedWorkflows()
+  const workflow = [...userWorkflows, ...WORKFLOWS].find((w) => w.id === workflowId)
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-6">

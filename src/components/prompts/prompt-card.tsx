@@ -3,6 +3,7 @@ import type { Prompt, UserPrompt } from '../../types/prompt'
 import { Button } from '../ui/button'
 import { ContentCard } from '../ui/content-card'
 import { CopyButton } from '../ui/copy-button'
+import { StarButton } from '../ui/star-button'
 import { PencilIcon, TrashIcon } from '../ui/icons'
 import type { PromptActions } from './prompt-actions'
 import { PromptEyebrow } from './prompt-eyebrow'
@@ -13,9 +14,21 @@ interface PromptCardProps extends PromptActions {
   onTagClick: (tag: string) => void
   /** Keyboard grid navigation's current pick. */
   highlighted?: boolean
+  isStarred?: boolean
+  onToggleStar?: () => void
 }
 
-export function PromptCard({ prompt, activeTag, onTagClick, highlighted, onOpen, onEdit, onDelete }: PromptCardProps) {
+export function PromptCard({
+  prompt,
+  activeTag,
+  onTagClick,
+  highlighted,
+  isStarred = false,
+  onToggleStar,
+  onOpen,
+  onEdit,
+  onDelete,
+}: PromptCardProps) {
   const variables = templateVariables(prompt.body)
 
   return (
@@ -30,7 +43,12 @@ export function PromptCard({ prompt, activeTag, onTagClick, highlighted, onOpen,
       source={prompt.source}
       onOpen={() => onOpen(prompt)}
       highlighted={highlighted}
-      actions={<CopyButton text={prompt.body} />}
+      actions={
+        <div className="flex items-center gap-1.5">
+          {onToggleStar && <StarButton isStarred={isStarred} onToggle={onToggleStar} />}
+          <CopyButton text={prompt.body} />
+        </div>
+      }
       footer={
         prompt.origin === 'user' && <SavedPromptControls prompt={prompt} onEdit={onEdit} onDelete={onDelete} />
       }

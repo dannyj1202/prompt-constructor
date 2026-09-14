@@ -11,6 +11,7 @@ import {
   GridIcon,
   LayersIcon,
   PackageIcon,
+  StarIcon,
   SwatchIcon,
 } from '../ui/icons'
 import { TagList } from '../ui/tag-list'
@@ -114,6 +115,9 @@ interface CategorySidebarProps {
   tags: string[]
   activeTag: string | null
   onTagClick: (tag: string) => void
+  starredOnly?: boolean
+  onToggleStarredOnly?: () => void
+  starredCount?: number
 }
 
 export function CategorySidebar({
@@ -125,9 +129,23 @@ export function CategorySidebar({
   tags,
   activeTag,
   onTagClick,
+  starredOnly = false,
+  onToggleStarredOnly,
+  starredCount,
 }: CategorySidebarProps) {
-  const items: { id: CategoryId | null; name: string; title?: string; count: number; Icon: IconComponent; accent: CategoryAccent | 'neutral' }[] = [
+  const items: {
+    id: CategoryId | null
+    name: string
+    title?: string
+    count: number
+    Icon: IconComponent
+    accent: CategoryAccent | 'neutral'
+    isStarred?: boolean
+  }[] = [
     { id: null, name: 'All prompts', count: total, Icon: GridIcon, accent: 'neutral' },
+    ...(starredCount !== undefined && onToggleStarredOnly
+      ? [{ id: null, name: 'Favorites', title: 'Starred prompts', count: starredCount, Icon: StarIcon, accent: 'amber' as const, isStarred: true }]
+      : []),
     ...categories.map((c) => ({
       id: c.id,
       name: c.name,
@@ -147,13 +165,20 @@ export function CategorySidebar({
         {/* Horizontal chip row on small screens, vertical list on large. */}
         <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:px-0 lg:pb-0">
           {items.map((item) => {
-            const active = item.id === selected
+            const active = item.isStarred ? starredOnly : !starredOnly && item.id === selected
             const style = ACCENT_STYLES[item.accent]
             return (
-              <li key={item.id ?? 'all'} className="shrink-0">
+              <li key={item.isStarred ? 'starred' : (item.id ?? 'all')} className="shrink-0">
                 <button
                   type="button"
-                  onClick={() => onSelect(item.id)}
+                  onClick={() => {
+                    if (item.isStarred) {
+                      onToggleStarredOnly?.()
+                    } else {
+                      if (starredOnly) onToggleStarredOnly?.()
+                      onSelect(item.id)
+                    }
+                  }}
                   title={item.title}
                   aria-current={active ? 'true' : undefined}
                   className={cn(

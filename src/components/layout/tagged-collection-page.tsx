@@ -21,6 +21,7 @@ interface TaggedCollectionPageProps<T extends { tags: string[] }> {
   searchFields: (item: T) => Array<string | undefined>
   title: string
   description: ReactNode
+  actions?: ReactNode
   noun: [singular: string, plural: string]
   renderCard: (item: T, context: TagContext & { onOpen: () => void }) => ReactNode
   renderDetail: (item: T, context: TagContext & { onClose: () => void }) => ReactNode
@@ -34,6 +35,7 @@ export function TaggedCollectionPage<T extends { tags: string[] }>({
   searchFields,
   title,
   description,
+  actions,
   noun,
   renderCard,
   renderDetail,
@@ -51,7 +53,7 @@ export function TaggedCollectionPage<T extends { tags: string[] }>({
 
   return (
     <BrowseLayout
-      heading={<PageHeading title={title} description={description} />}
+      heading={<PageHeading title={title} description={description} actions={actions} />}
       sidebar={
         tagCounts.length > 0 && (
           <SidebarSection title="Tags">
