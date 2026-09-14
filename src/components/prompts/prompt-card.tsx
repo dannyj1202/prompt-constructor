@@ -63,7 +63,13 @@ export function PromptCard({
       highlighted={highlighted}
       actions={
         <div className="flex items-center gap-1.5">
-          {onToggleStar && <StarButton isStarred={isStarred} onToggle={onToggleStar} />}
+          {onToggleStar && (
+            <StarButton
+              isStarred={isStarred}
+              onToggle={onToggleStar}
+              ariaLabel={isStarred ? `Remove ${prompt.title} from favorites` : `Add ${prompt.title} to favorites`}
+            />
+          )}
           <CopyButton text={prompt.body} />
         </div>
       }

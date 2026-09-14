@@ -109,6 +109,7 @@ export function PromptDetailDialog({
               isStarred={isStarred}
               onToggle={onToggleStar}
               label={isStarred ? 'Favorited' : 'Favorite'}
+              ariaLabel={isStarred ? `Remove ${prompt.title} from favorites` : `Add ${prompt.title} to favorites`}
               className="px-2.5 py-1.5 text-xs"
             />
           )}

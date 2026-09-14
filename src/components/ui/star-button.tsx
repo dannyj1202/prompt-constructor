@@ -5,10 +5,12 @@ interface StarButtonProps {
   isStarred: boolean
   onToggle: () => void
   label?: string
+  ariaLabel?: string
   className?: string
 }
 
-export function StarButton({ isStarred, onToggle, label, className }: StarButtonProps) {
+export function StarButton({ isStarred, onToggle, label, ariaLabel, className }: StarButtonProps) {
+  const defaultLabel = isStarred ? 'Remove from favorites' : 'Add to favorites'
   return (
     <button
       type="button"
@@ -16,8 +18,8 @@ export function StarButton({ isStarred, onToggle, label, className }: StarButton
         e.stopPropagation()
         onToggle()
       }}
-      title={isStarred ? 'Remove from favorites' : 'Add to favorites'}
-      aria-label={isStarred ? 'Remove from favorites' : 'Add to favorites'}
+      title={ariaLabel ?? defaultLabel}
+      aria-label={ariaLabel ?? defaultLabel}
       className={cn(
         'inline-flex min-h-[32px] min-w-[32px] items-center justify-center gap-1.5 rounded-md border p-1 text-xs font-medium transition-all',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500',
