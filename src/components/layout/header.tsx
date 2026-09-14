@@ -24,7 +24,7 @@ export function Header({
   onOpenMcp,
 }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
+    <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-white/10 dark:bg-canvas/80">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
         <a href={href('/prompts')} className="flex shrink-0 items-center gap-2">
           <span className="grid size-8 place-items-center rounded-lg bg-indigo-600 text-white">

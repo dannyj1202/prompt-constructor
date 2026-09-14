@@ -37,7 +37,7 @@ export function ContentCard({
   children,
 }: ContentCardProps) {
   return (
-    <article className="relative flex w-full flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700">
+    <article className="relative flex w-full flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-white/8 dark:bg-canvas-card dark:hover:border-white/15">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           {eyebrow && <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium">{eyebrow}</div>}
@@ -63,7 +63,7 @@ export function ContentCard({
       <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
 
       {preview && (
-        <pre className="mt-3 line-clamp-5 rounded-lg bg-zinc-50 p-3 font-mono text-xs whitespace-pre-wrap text-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
+        <pre className="mt-3 line-clamp-5 rounded-lg bg-zinc-50 p-3 font-mono text-xs whitespace-pre-wrap text-zinc-700 dark:bg-canvas-inset dark:text-zinc-300">
           {preview}
         </pre>
       )}

@@ -23,7 +23,7 @@ interface MainNavProps {
 export function MainNav({ currentPath, savedCount }: MainNavProps) {
   return (
     <nav aria-label="Main">
-      <ul className="-mb-px flex gap-1 overflow-x-auto">
+      <ul className="flex gap-1 overflow-x-auto py-2">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item.path, currentPath)
           return (
@@ -32,10 +32,10 @@ export function MainNav({ currentPath, savedCount }: MainNavProps) {
                 href={href(item.path)}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-500',
+                  'flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-500',
                   active
-                    ? 'border-indigo-600 text-zinc-900 dark:text-zinc-100'
-                    : 'border-transparent text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100',
+                    ? 'bg-zinc-200/80 text-zinc-900 dark:bg-white/10 dark:text-zinc-100'
+                    : 'text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-white/5 dark:hover:text-zinc-100',
                 )}
               >
                 {item.label}
