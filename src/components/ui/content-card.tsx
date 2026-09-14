@@ -1,4 +1,5 @@
 import type { MouseEvent, ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 import { TagList } from './tag-list'
 
 interface ContentCardProps {
@@ -14,6 +15,8 @@ interface ContentCardProps {
   source?: string
   /** Makes the whole card a button that opens a detail view. */
   onOpen?: () => void
+  /** Keyboard grid navigation's current pick — shows a persistent ring, independent of hover. */
+  highlighted?: boolean
   /** Top-right controls, e.g. the copy button. Rendered above the stretched button. */
   actions?: ReactNode
   /** Extra footer content, e.g. edit/delete controls. */
@@ -39,6 +42,7 @@ export function ContentCard({
   onTagClick,
   source,
   onOpen,
+  highlighted = false,
   actions,
   footer,
   children,
@@ -46,7 +50,10 @@ export function ContentCard({
   return (
     <article
       onMouseMove={trackSpotlight}
-      className="group relative flex w-full flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-white/8 dark:bg-canvas-card dark:hover:border-white/15"
+      className={cn(
+        'group relative flex w-full flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-white/8 dark:bg-canvas-card dark:hover:border-white/15',
+        highlighted && 'border-indigo-500 ring-2 ring-indigo-500/40 dark:border-indigo-400 dark:ring-indigo-400/30',
+      )}
     >
       {/* Cursor-tracking spotlight: a soft flood behind the content, plus a border ring that only shows a 1px edge via mask-composite. */}
       <div

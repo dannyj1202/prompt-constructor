@@ -15,9 +15,16 @@ function isTypingTarget(target: EventTarget | null): boolean {
 export function SearchInput({ value, onChange, placeholder = 'Search…' }: SearchInputProps) {
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // "/" focuses search from anywhere on the page, like GitHub.
+  // "/" (like GitHub) or Cmd/Ctrl+K (like Raycast/Linear) focuses search from anywhere.
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
+      const isCmdK = (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k'
+      if (isCmdK) {
+        event.preventDefault()
+        inputRef.current?.focus()
+        inputRef.current?.select()
+        return
+      }
       if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return
       if (isTypingTarget(event.target)) return
       event.preventDefault()

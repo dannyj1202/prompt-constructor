@@ -11,9 +11,11 @@ interface PromptCardProps extends PromptActions {
   prompt: Prompt
   activeTag: string | null
   onTagClick: (tag: string) => void
+  /** Keyboard grid navigation's current pick. */
+  highlighted?: boolean
 }
 
-export function PromptCard({ prompt, activeTag, onTagClick, onOpen, onEdit, onDelete }: PromptCardProps) {
+export function PromptCard({ prompt, activeTag, onTagClick, highlighted, onOpen, onEdit, onDelete }: PromptCardProps) {
   const variables = templateVariables(prompt.body)
 
   return (
@@ -27,6 +29,7 @@ export function PromptCard({ prompt, activeTag, onTagClick, onOpen, onEdit, onDe
       onTagClick={onTagClick}
       source={prompt.source}
       onOpen={() => onOpen(prompt)}
+      highlighted={highlighted}
       actions={<CopyButton text={prompt.body} />}
       footer={
         prompt.origin === 'user' && <SavedPromptControls prompt={prompt} onEdit={onEdit} onDelete={onDelete} />
