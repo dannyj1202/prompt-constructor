@@ -1,3 +1,4 @@
+import { templateVariables } from '../../lib/formatContent'
 import type { Prompt, UserPrompt } from '../../types/prompt'
 import { Button } from '../ui/button'
 import { ContentCard } from '../ui/content-card'
@@ -13,6 +14,8 @@ interface PromptCardProps extends PromptActions {
 }
 
 export function PromptCard({ prompt, activeTag, onTagClick, onOpen, onEdit, onDelete }: PromptCardProps) {
+  const variables = templateVariables(prompt.body)
+
   return (
     <ContentCard
       title={prompt.title}
@@ -28,7 +31,20 @@ export function PromptCard({ prompt, activeTag, onTagClick, onOpen, onEdit, onDe
       footer={
         prompt.origin === 'user' && <SavedPromptControls prompt={prompt} onEdit={onEdit} onDelete={onDelete} />
       }
-    />
+    >
+      {variables.length > 0 && (
+        <ul className="mt-2 flex flex-wrap gap-1.5">
+          {variables.map((name) => (
+            <li
+              key={name}
+              className="rounded-md border border-indigo-200 bg-indigo-50 px-1.5 py-0.5 font-mono text-[10px] font-medium text-indigo-700 dark:border-indigo-500/25 dark:bg-indigo-500/10 dark:text-indigo-300"
+            >
+              [{name}]
+            </li>
+          ))}
+        </ul>
+      )}
+    </ContentCard>
   )
 }
 

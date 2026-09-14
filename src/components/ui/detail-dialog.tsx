@@ -8,8 +8,12 @@ interface DetailDialogProps {
   title: string
   description: string
   eyebrow?: ReactNode
-  /** Shown in full as a monospace block. */
+  /** Shown in full as a monospace block, unless `bodyContent` overrides it. */
   body: string
+  /** Replaces the default `<pre>{body}</pre>`, e.g. a live variable-filled preview. */
+  bodyContent?: ReactNode
+  /** Rendered between the header and the body, e.g. a variable-input panel. */
+  beforeBody?: ReactNode
   tags?: string[]
   activeTag?: string | null
   onTagClick?: (tag: string) => void
@@ -26,6 +30,8 @@ export function DetailDialog({
   description,
   eyebrow,
   body,
+  bodyContent,
+  beforeBody,
   tags = [],
   activeTag = null,
   onTagClick,
@@ -38,10 +44,14 @@ export function DetailDialog({
     <Modal open={open} onClose={onClose} labelledBy={titleId}>
       <ModalHeader titleId={titleId} title={title} eyebrow={eyebrow} description={description} onClose={onClose} />
 
+      {beforeBody}
+
       <div className="overflow-y-auto p-5">
-        <pre className="rounded-lg bg-zinc-50 p-4 font-mono text-sm whitespace-pre-wrap text-zinc-800 dark:bg-zinc-950 dark:text-zinc-200">
-          {body}
-        </pre>
+        {bodyContent ?? (
+          <pre className="rounded-lg bg-zinc-50 p-4 font-mono text-sm whitespace-pre-wrap text-zinc-800 dark:bg-canvas-inset dark:text-zinc-200">
+            {body}
+          </pre>
+        )}
       </div>
 
       <ModalFooter>
