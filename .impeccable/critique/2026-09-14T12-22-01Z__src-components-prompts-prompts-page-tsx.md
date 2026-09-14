@@ -10,6 +10,7 @@ target_fingerprint: "sha256:088e7c7403dcc9ea84858641206b8a9882905d58f656c748c977
 target_path: /Users/dj/Desktop/PROJECTS/prompt-constructor/src/components/prompts/prompts-page.tsx
 timestamp: 2026-09-14T12-22-01Z
 slug: src-components-prompts-prompts-page-tsx
+closed: true
 ---
 Method: dual-agent (A: general-purpose design-review agent · B: general-purpose detector/browser-evidence agent)
 

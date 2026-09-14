@@ -55,6 +55,7 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
     items: visible,
     onOpen: actions.onOpen,
     onCopy: (prompt) => copy(prompt.body),
+    onNavigate: (prompt) => document.getElementById(`prompt-card-${prompt.id}`)?.focus(),
   })
   const activePrompt = visible[activeIndex]
   const activeId = activePrompt?.id

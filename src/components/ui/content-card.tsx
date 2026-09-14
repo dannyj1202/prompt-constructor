@@ -5,6 +5,8 @@ import { TagList } from './tag-list'
 interface ContentCardProps {
   title: string
   description: string
+  /** Applied to the stretched open button, so keyboard grid-nav can move real focus here. */
+  id?: string
   /** Small label above the title (e.g. category name, badges). */
   eyebrow?: ReactNode
   /** Monospace excerpt of the body, clipped to two lines. */
@@ -35,6 +37,7 @@ function trackSpotlight(event: MouseEvent<HTMLElement>) {
 export function ContentCard({
   title,
   description,
+  id,
   eyebrow,
   preview,
   tags = [],
@@ -85,6 +88,7 @@ export function ContentCard({
                 // Stretched button: the whole card opens the detail view, while
                 // actions and tags sit above it on z-10.
                 <button
+                  id={id}
                   type="button"
                   onClick={onOpen}
                   className="text-left after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-indigo-500"

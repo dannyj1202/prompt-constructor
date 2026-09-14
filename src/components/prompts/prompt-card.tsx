@@ -40,6 +40,7 @@ export function PromptCard({
 
   return (
     <ContentCard
+      id={`prompt-card-${prompt.id}`}
       title={prompt.title}
       description={prompt.description}
       eyebrow={
