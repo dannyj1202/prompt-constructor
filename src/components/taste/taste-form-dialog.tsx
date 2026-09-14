@@ -108,12 +108,12 @@ export function TasteFormDialog({ entry, tagSuggestions = [], onSubmit, onClose 
             />
           </Field>
 
-          <Field label="Source Citation" htmlFor={`${fieldId}-source`} hint="e.g. AGENTS.md § Style or personal notes">
+          <Field label="Source Citation" htmlFor={`${fieldId}-source`} hint="e.g. AGENTS.md - Style or personal notes">
             <input
               id={`${fieldId}-source`}
               value={source}
               onChange={(e) => setSource(e.target.value)}
-              placeholder="AGENTS.md § Code Style"
+              placeholder="AGENTS.md - Code Style"
               className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 font-mono text-xs outline-none placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-700 dark:bg-zinc-950"
             />
           </Field>

@@ -12,7 +12,7 @@ export const BUILT_IN_PROMPTS: BuiltInPrompt[] = [
       'Turn the setup docs into an ordered checklist from a fresh clone to a first successful run.',
     category: 'onboarding-setup',
     tags: ['setup', 'env', 'getting-started'],
-    source: 'AGENTS.md § Environment Setup',
+    source: 'AGENTS.md - Environment Setup',
     body: `Read this repository's setup documentation (README.md, AGENTS.md, .env.example, and scripts in package.json) and produce an ordered, step-by-step checklist to get the project running locally from a clean clone.
 
 For each step include:
@@ -31,7 +31,7 @@ Verify node engine compatibility and package manager constraints before recommen
       'A structured guide for a new engineer to prepare, verify, and submit their first contribution.',
     category: 'onboarding-setup',
     tags: ['onboarding', 'git', 'pr', 'first-pr'],
-    source: 'AGENTS.md § Contributor Onboarding',
+    source: 'AGENTS.md - Contributor Onboarding',
     body: `Guide me through submitting my first pull request in this repository.
 
 Review my current branch and check:
@@ -49,7 +49,7 @@ Review my current branch and check:
       'Diagnose Node/pnpm/npm engine version mismatches, native module compile errors, and lockfile drift.',
     category: 'onboarding-setup',
     tags: ['troubleshooting', 'node', 'lockfile', 'setup'],
-    source: 'AGENTS.md § Toolchain Configuration',
+    source: 'AGENTS.md - Toolchain Configuration',
     body: `I am encountering environment setup errors when running install or dev:
 \`\`\`
 {{ERROR_OUTPUT}}
@@ -72,7 +72,7 @@ Investigate the failure:
     description: 'Draft a pull request description for the current branch using the team template.',
     category: 'git-pr-workflow',
     tags: ['pr', 'git', 'review', 'template'],
-    source: 'AGENTS.md § Git & PR Workflow',
+    source: 'AGENTS.md - Git & PR Workflow',
     body: `Write a pull request description for the changes on my current branch against \`main\`.
 
 Follow the repository's PR template and commit conventions:
@@ -94,7 +94,7 @@ Only describe changes that are actually in the diff.`,
     description: 'Inspect staged changes and generate atomic conventional commit messages.',
     category: 'git-pr-workflow',
     tags: ['git', 'commits', 'conventional-commits'],
-    source: 'AGENTS.md § Commit Guidelines',
+    source: 'AGENTS.md - Commit Guidelines',
     body: `Inspect the staged git diff and craft an atomic conventional commit message:
 \`\`\`
 <type>(<scope>): <subject in imperative, lowercase, no period>
@@ -115,7 +115,7 @@ Keep the first line under 72 characters. If changes span unrelated components, r
       'Step-by-step guidance for resolving complex git rebase conflicts without losing commits.',
     category: 'git-pr-workflow',
     tags: ['git', 'rebase', 'conflicts', 'merge'],
-    source: 'AGENTS.md § Git Conflict Protocols',
+    source: 'AGENTS.md - Git Conflict Protocols',
     body: `I am rebasing my feature branch on \`origin/main\` and hit merge conflicts in:
 \`\`\`
 {{CONFLICTING_FILES}}
@@ -138,7 +138,7 @@ Help me resolve these safely:
     description: 'Summarize changes since the last tag and list what must be verified before release.',
     category: 'release-dependencies',
     tags: ['release', 'checklist', 'deployment'],
-    source: 'AGENTS.md § Release Process',
+    source: 'AGENTS.md - Release Process',
     body: `Prepare a release checklist for version {{VERSION}}.
 
 Compare against the previous release tag (git log <last_tag>..HEAD) and:
@@ -154,7 +154,7 @@ Compare against the previous release tag (git log <last_tag>..HEAD) and:
     description: 'Scan package.json for vulnerabilities, deprecations, and major upgrade migration paths.',
     category: 'release-dependencies',
     tags: ['dependencies', 'security', 'audit', 'npm'],
-    source: 'AGENTS.md § Security & Dependency Auditing',
+    source: 'AGENTS.md - Security & Dependency Auditing',
     body: `Audit the dependencies in \`package.json\`:
 1. Run vulnerability audit (\`npm audit\` or \`pnpm audit\`) and summarize findings by severity (Critical/High/Moderate).
 2. Check for outdated packages with breaking changes.
@@ -168,7 +168,7 @@ Compare against the previous release tag (git log <last_tag>..HEAD) and:
     description: 'Format a Keep a Changelog compliant release entry from conventional commits.',
     category: 'release-dependencies',
     tags: ['changelog', 'semver', 'release-notes'],
-    source: 'AGENTS.md § Changelog Specifications',
+    source: 'AGENTS.md - Changelog Specifications',
     body: `Generate a \`CHANGELOG.md\` entry for version \`[{{VERSION}}] - {{DATE}}\` adhering to the Keep a Changelog standard.
 
 Extract changes from git commits since the last tag:
@@ -192,7 +192,7 @@ Include PR links and contributor handles formatted in markdown.`,
     description: 'Generate a new feature module by copying the structure of the closest existing one.',
     category: 'code-scaffolding',
     tags: ['scaffold', 'patterns', 'architecture'],
-    source: 'AGENTS.md § Module Architecture',
+    source: 'AGENTS.md - Module Architecture',
     body: `Scaffold a new {{FEATURE_NAME}} module following the established architectural patterns in this codebase.
 
 1. Inspect the codebase for the closest matching feature module to use as reference.
@@ -208,7 +208,7 @@ Include PR links and contributor handles formatted in markdown.`,
     description: 'Generate a typed API client adapter with error normalization, headers, and retries.',
     category: 'code-scaffolding',
     tags: ['api', 'sdk', 'transport', 'typescript'],
-    source: 'AGENTS.md § Transport SDK Conventions',
+    source: 'AGENTS.md - Transport SDK Conventions',
     body: `Scaffold an API transport client for the endpoint: {{ENDPOINT_PATH}} (Method: {{HTTP_METHOD}}).
 
 Requirements:
@@ -224,7 +224,7 @@ Requirements:
     description: 'Create a Vitest/Testing Library test suite covering happy paths, edge cases, and errors.',
     category: 'code-scaffolding',
     tags: ['testing', 'vitest', 'unit-tests', 'scaffold'],
-    source: 'AGENTS.md § Testing Standards',
+    source: 'AGENTS.md - Testing Standards',
     body: `Scaffold a comprehensive unit test suite for: {{TARGET_FILE_OR_COMPONENT}}
 
 Follow testing guidelines:
@@ -248,7 +248,7 @@ Follow testing guidelines:
     description: 'List which design-system component and props to use for each element of a design.',
     category: 'ui-design-system',
     tags: ['design-system', 'figma', 'components', 'tokens'],
-    source: 'AGENTS.md § Design System Conventions',
+    source: 'AGENTS.md - Design System Conventions',
     body: `Map this design specification to our design-system components:
 {{FIGMA_LINK_OR_DESCRIPTION}}
 
@@ -265,7 +265,7 @@ For each element in the design:
     description: 'Create a fully accessible dialog modal with focus trapping, backdrop blur, and escape handling.',
     category: 'ui-design-system',
     tags: ['accessibility', 'modal', 'a11y', 'dialog'],
-    source: 'AGENTS.md § Accessibility Guidelines',
+    source: 'AGENTS.md - Accessibility Guidelines',
     body: `Implement an accessible modal dialog for: {{MODAL_PURPOSE}}
 
 Requirements:
@@ -282,7 +282,7 @@ Requirements:
     description: 'Create a high-density data grid with sorting, pagination, empty states, and mobile adaptation.',
     category: 'ui-design-system',
     tags: ['table', 'grid', 'responsive', 'ui'],
-    source: 'AGENTS.md § UI Component Standards',
+    source: 'AGENTS.md - UI Component Standards',
     body: `Build a responsive data table component for displaying: {{DATA_TYPE}}
 
 Features:
@@ -302,7 +302,7 @@ Features:
     description: 'Find user-facing strings in a file or folder and replace them with translation keys.',
     category: 'content-i18n',
     tags: ['i18n', 'translations', 'refactor'],
-    source: 'AGENTS.md § Localization Conventions',
+    source: 'AGENTS.md - Localization Conventions',
     body: `Scan {{FILE_OR_FOLDER}} for all hard-coded user-facing strings and extract them into the i18n translation system.
 
 Follow conventions:
@@ -318,7 +318,7 @@ Follow conventions:
     description: 'Check layout mirroring, icon directions, chevron orientations, and bidirectional text.',
     category: 'content-i18n',
     tags: ['rtl', 'arabic', 'localization', 'css'],
-    source: 'AGENTS.md § RTL & Bidirectional Design',
+    source: 'AGENTS.md - RTL & Bidirectional Design',
     body: `Perform an Arabic Right-to-Left (RTL) layout audit on: {{COMPONENT_OR_PAGE}}
 
 Verify:
@@ -334,7 +334,7 @@ Verify:
     description: 'Set up pluralization rules supporting English dual forms and Arabic six-category forms.',
     category: 'content-i18n',
     tags: ['pluralization', 'i18n', 'icu', 'formatting'],
-    source: 'AGENTS.md § Internationalization Rules',
+    source: 'AGENTS.md - Internationalization Rules',
     body: `Implement robust pluralization rules for: {{PHRASE_OR_METRIC}} (e.g. "1 hotel room", "3 flights found", "0 reviews").
 
 Ensure proper handling across:
@@ -353,7 +353,7 @@ Ensure proper handling across:
     description: 'Trace the code path, rank hypotheses, and name the check that confirms each one.',
     category: 'investigation-debugging',
     tags: ['debugging', 'root-cause', 'investigation'],
-    source: 'AGENTS.md § Investigation Guidelines',
+    source: 'AGENTS.md - Investigation Guidelines',
     body: `Help me investigate this bug systematically before altering any code:
 
 - **Symptom:** {{WHAT_HAPPENS}}
@@ -374,7 +374,7 @@ Instructions:
     description: 'Identify unnecessary re-render loops, detached DOM nodes, and dangling event listeners.',
     category: 'investigation-debugging',
     tags: ['performance', 'memory', 'react', 'profiling'],
-    source: 'AGENTS.md § Performance Guidelines',
+    source: 'AGENTS.md - Performance Guidelines',
     body: `Investigate performance sluggishness or memory retention in: {{COMPONENT_OR_MODULE}}
 
 Audit for:
@@ -390,7 +390,7 @@ Audit for:
     description: 'Isolate race conditions, unawaited promises, and clock timing issues in test suites.',
     category: 'investigation-debugging',
     tags: ['testing', 'flaky-tests', 'vitest', 'async'],
-    source: 'AGENTS.md § Test Reliability Protocols',
+    source: 'AGENTS.md - Test Reliability Protocols',
     body: `This test occasionally fails in CI with non-deterministic behavior:
 \`\`\`typescript
 {{FAILING_TEST_CODE}}
@@ -413,7 +413,7 @@ Diagnose the flakiness:
     description: 'Add a tracking event that follows the existing naming convention and payload shape.',
     category: 'analytics',
     tags: ['analytics', 'tracking', 'telemetry'],
-    source: 'AGENTS.md § Analytics & Tracking',
+    source: 'AGENTS.md - Analytics & Tracking',
     body: `Add analytics tracking for user interaction: {{USER_ACTION}}
 
 Follow team taxonomy:
@@ -429,7 +429,7 @@ Follow team taxonomy:
     description: 'Verify sequential tracking events across multi-step checkout and onboarding flows.',
     category: 'analytics',
     tags: ['funnel', 'conversion', 'analytics', 'audit'],
-    source: 'AGENTS.md § Funnel Tracking Specs',
+    source: 'AGENTS.md - Funnel Tracking Specs',
     body: `Audit the analytics tracking across this conversion funnel: {{FUNNEL_FLOW_NAME}}
 
 Review steps:
@@ -445,7 +445,7 @@ Review steps:
     description: 'Ensure dataLayer.push structures conform to schema and do not wipe existing keys.',
     category: 'analytics',
     tags: ['gtm', 'datalayer', 'google-tag-manager', 'tracking'],
-    source: 'AGENTS.md § Tag Management Standards',
+    source: 'AGENTS.md - Tag Management Standards',
     body: `Review or implement the Google Tag Manager \`window.dataLayer.push\` implementation for: {{FEATURE_NAME}}
 
 Verify:

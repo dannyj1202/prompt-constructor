@@ -32,7 +32,7 @@ interface PromptBase {
 export interface BuiltInPrompt extends PromptBase {
   origin: 'builtin'
   category: CategoryId
-  /** e.g. `AGENTS.md § Commit format` or `.github/workflows/release.yml` */
+  /** e.g. `AGENTS.md - Commit format` or `.github/workflows/release.yml` */
   source: string
 }
 

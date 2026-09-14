@@ -6,7 +6,7 @@ export const TASTE_ENTRIES: TasteEntry[] = [
     title: 'TypeScript Strict Patterns',
     description: 'Rules for type safety: discriminated unions over enums, no any, and explicit type guards.',
     tags: ['typescript', 'typing', 'safety'],
-    source: 'AGENTS.md § TypeScript Standards',
+    source: 'AGENTS.md - TypeScript Standards',
     body: `### TypeScript Strict Patterns
 
 1. **Discriminated Unions over Enums:**
@@ -36,7 +36,7 @@ export const TASTE_ENTRIES: TasteEntry[] = [
     title: 'React 19 Architecture Standards',
     description: 'Component structuring, pure functions, state lifting, and avoiding useEffect for derived state.',
     tags: ['react', 'components', 'hooks'],
-    source: 'AGENTS.md § React Conventions',
+    source: 'AGENTS.md - React Conventions',
     body: `### React 19 Architecture Standards
 
 1. **Calculate Derived State During Render:**
@@ -62,7 +62,7 @@ export const TASTE_ENTRIES: TasteEntry[] = [
     title: 'Tailwind CSS v4 & Surface Elevation',
     description: 'Layered obsidian dark mode, CSS custom property tokens, and mobile-first responsive utilities.',
     tags: ['tailwind', 'css', 'design-system'],
-    source: 'AGENTS.md § Styling Conventions',
+    source: 'AGENTS.md - Styling Conventions',
     body: `### Tailwind CSS v4 & Surface Elevation
 
 1. **Layered Dark Mode Surfaces:**
@@ -85,7 +85,7 @@ export const TASTE_ENTRIES: TasteEntry[] = [
     title: 'Git Commit & PR Conventions',
     description: 'Commit message formatting, branch naming strategies, and pull request description templates.',
     tags: ['git', 'workflow', 'review'],
-    source: 'AGENTS.md § Git & PR Workflow',
+    source: 'AGENTS.md - Git & PR Workflow',
     body: `### Git Commit & PR Conventions
 
 1. **Conventional Commit Format:**
@@ -111,7 +111,7 @@ export const TASTE_ENTRIES: TasteEntry[] = [
     title: 'API Design & Error Handling',
     description: 'REST/GraphQL schema standards, unified response envelopes, idempotency, and status codes.',
     tags: ['api', 'rest', 'backend', 'architecture'],
-    source: 'AGENTS.md § API Conventions',
+    source: 'AGENTS.md - API Conventions',
     body: `### API Design & Error Handling
 
 1. **Unified Response Envelope:**
@@ -154,7 +154,7 @@ export const TASTE_ENTRIES: TasteEntry[] = [
     title: 'Testing Standards & Mock Hygiene',
     description: 'Guidelines for Vitest, React Testing Library, query priority, and test isolation.',
     tags: ['testing', 'vitest', 'mocking', 'qa'],
-    source: 'AGENTS.md § Testing Guidelines',
+    source: 'AGENTS.md - Testing Guidelines',
     body: `### Testing Standards & Mock Hygiene
 
 1. **Test Behavior, Not Implementation Details:**

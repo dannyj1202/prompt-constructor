@@ -109,9 +109,9 @@ export function TastePage({ route }: { route: Route }) {
             renderItem={(entry) => {
               const history = getHistory('taste', entry.id)
               const rules = parseTasteRules(entry.body)
-              const sourceParts = entry.source.split('§')
+              const sourceParts = entry.source.split(/\s*[-:]\s*/)
               const sourceDoc = sourceParts[0]?.trim() || 'AGENTS.md'
-              const sourceSection = sourceParts[1]?.trim()
+              const sourceSection = sourceParts.slice(1).join(' - ').trim()
 
               return (
                 <ContentCard
@@ -125,7 +125,7 @@ export function TastePage({ route }: { route: Route }) {
                       </span>
                       {sourceSection && (
                         <span className="text-xs text-zinc-500 dark:text-zinc-400">
-                          § {sourceSection}
+                          {sourceSection}
                         </span>
                       )}
                       {entry.origin === 'user' && (

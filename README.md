@@ -147,7 +147,7 @@ Built-in prompts reside in [`src/data/prompts.ts`](src/data/prompts.ts). Each pr
   description: 'Short summary of what this prompt accomplishes.',
   category: 'category-id',
   tags: ['tag1', 'tag2'],
-  source: 'File or convention citation (e.g., AGENTS.md § Commit format)',
+  source: 'File or convention citation (e.g., AGENTS.md - Commit format)',
   body: `The prompt template text (can use {{VARIABLE}} placeholders).`
 }
 ```
