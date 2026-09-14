@@ -1,21 +1,25 @@
 import { useState } from 'react'
 import { fillTemplate, templateVariables } from '../../lib/formatContent'
-import type { Prompt } from '../../types/prompt'
+import type { Prompt, UserPrompt } from '../../types/prompt'
 import { CopyButton } from '../ui/copy-button'
 import { DetailDialog } from '../ui/detail-dialog'
 import { StarButton } from '../ui/star-button'
 import { INPUT_CLASS } from './prompt-form-dialog'
-import type { PromptActions } from './prompt-actions'
-import { SavedPromptControls } from './prompt-card'
+import { PromptControls } from './prompt-card'
 import { PromptEyebrow } from './prompt-eyebrow'
 
-interface PromptDetailDialogProps extends Pick<PromptActions, 'onEdit' | 'onDelete'> {
+interface PromptDetailDialogProps {
   prompt: Prompt
   activeTag: string | null
   onClose: () => void
   onTagClick: (tag: string) => void
   isStarred?: boolean
   onToggleStar?: () => void
+  onEdit: (prompt: Prompt) => void
+  onDelete?: (prompt: UserPrompt) => void
+  onHistory?: (prompt: Prompt) => void
+  versionNumber?: number
+  totalRevisions?: number
 }
 
 /** Splits `body` on `{{VARIABLE}}` tokens, keeping the tokens so each segment can be styled. */
@@ -36,6 +40,9 @@ export function PromptDetailDialog({
   onToggleStar,
   onEdit,
   onDelete,
+  onHistory,
+  versionNumber,
+  totalRevisions,
 }: PromptDetailDialogProps) {
   const variables = templateVariables(prompt.body)
   const [values, setValues] = useState<Record<string, string>>({})
@@ -97,10 +104,23 @@ export function PromptDetailDialog({
       }
       actions={
         <>
-          {onToggleStar && <StarButton isStarred={isStarred} onToggle={onToggleStar} label={isStarred ? 'Favorited' : 'Favorite'} className="px-2.5 py-1.5 text-xs" />}
-          {prompt.origin === 'user' && (
-            <SavedPromptControls prompt={prompt} onEdit={onEdit} onDelete={onDelete} labelled />
+          {onToggleStar && (
+            <StarButton
+              isStarred={isStarred}
+              onToggle={onToggleStar}
+              label={isStarred ? 'Favorited' : 'Favorite'}
+              className="px-2.5 py-1.5 text-xs"
+            />
           )}
+          <PromptControls
+            prompt={prompt}
+            onEdit={onEdit}
+            onDelete={onDelete}
+            onHistory={onHistory}
+            versionNumber={versionNumber}
+            totalRevisions={totalRevisions}
+            labelled
+          />
           <CopyButton text={filledBody} label="Copy prompt" className="px-3 py-1.5 text-sm" />
         </>
       }

@@ -1,29 +1,32 @@
 import { useEffect, useMemo, useState } from 'react'
+import { EntityHistoryDialog } from './components/history/entity-history-dialog'
 import { Header } from './components/layout/header'
 import { PageHeading } from './components/layout/page-heading'
 import { McpConfigDialog } from './components/mcp/mcp-config-dialog'
+import { PersonalPage } from './components/personal/personal-page'
 import { DeletePromptDialog } from './components/prompts/delete-prompt-dialog'
 import type { PromptActions } from './components/prompts/prompt-actions'
 import { PromptDetailDialog } from './components/prompts/prompt-detail-dialog'
 import { PromptFormDialog } from './components/prompts/prompt-form-dialog'
 import { PromptsPage } from './components/prompts/prompts-page'
-import { SavedPromptsPage } from './components/prompts/saved-prompts-page'
 import { SkillsPage } from './components/skills/skills-page'
 import { TagsPage } from './components/tags/tags-page'
 import { TastePage } from './components/taste/taste-page'
 import { WorkflowDetailPage } from './components/workflows/workflow-detail-page'
 import { WorkflowsPage } from './components/workflows/workflows-page'
 import { BUILT_IN_PROMPTS } from './data/prompts'
+import { useEntityHistory } from './hooks/useEntityHistory'
 import { useSavedPrompts } from './hooks/useSavedPrompts'
 import { useStarredPrompts } from './hooks/useStarredPrompts'
 import { syncSavedPromptsToMcp } from './lib/mcpSync'
 import { href, navigate, updateParams, useHashRoute } from './lib/router'
 import { getSavedPrompts } from './lib/savedPromptsStorage'
 import { countByTag } from './lib/search'
-import type { Prompt, UserPrompt, UserPromptInput } from './types/prompt'
+import type { EntityHistoryRecord } from './types/history'
+import type { BuiltInPrompt, Prompt, UserPrompt, UserPromptInput } from './types/prompt'
 
 const SEARCH_PLACEHOLDERS: Record<string, string> = {
-  '/saved': 'Search saved prompts…',
+  '/saved': 'Search personal library, edited items, tags…',
   '/workflows': 'Search workflows…',
   '/skills': 'Search skills…',
   '/taste': 'Search taste…',
@@ -34,15 +37,31 @@ export default function App() {
   const route = useHashRoute()
   const { prompts: savedPrompts, create, update, remove } = useSavedPrompts()
   const { isStarred, toggleStar } = useStarredPrompts()
+  const { getHistory, saveEdit, revertToVersion, recentlyEdited, histories } = useEntityHistory()
 
-  // Saved prompts first so your own work sits at the top of the library.
-  const allPrompts = useMemo<Prompt[]>(() => [...savedPrompts, ...BUILT_IN_PROMPTS], [savedPrompts])
+  // Overlay any customized snapshot from history onto all prompts
+  const allPrompts = useMemo<Prompt[]>(() => {
+    const promptHistories = new Map(
+      histories.filter((h) => h.entityType === 'prompt').map((h) => [h.entityId, h]),
+    )
+    const userPromptsWithHistory = savedPrompts.map((p) => {
+      const h = promptHistories.get(p.id)
+      return h ? { ...p, ...(h.currentSnapshot as Partial<UserPrompt>) } : p
+    })
+    const builtInWithHistory = BUILT_IN_PROMPTS.map((p) => {
+      const h = promptHistories.get(p.id)
+      return h ? { ...p, ...(h.currentSnapshot as Partial<BuiltInPrompt>) } : p
+    })
+    return [...userPromptsWithHistory, ...builtInWithHistory]
+  }, [savedPrompts, histories])
+
   const promptsById = useMemo(() => new Map(allPrompts.map((p) => [p.id, p])), [allPrompts])
   const tagSuggestions = useMemo(() => countByTag(allPrompts).map(([tag]) => tag), [allPrompts])
 
   const [openPromptId, setOpenPromptId] = useState<string | null>(null)
-  const [form, setForm] = useState<{ prompt?: UserPrompt } | null>(null)
+  const [form, setForm] = useState<{ prompt?: Prompt } | null>(null)
   const [pendingDelete, setPendingDelete] = useState<UserPrompt | null>(null)
+  const [historyDialogRecord, setHistoryDialogRecord] = useState<EntityHistoryRecord | null>(null)
   const [mcpOpen, setMcpOpen] = useState(false)
 
   // Derived from the live list so edits show immediately and deletes close it.
@@ -63,6 +82,10 @@ export default function App() {
     onOpen: (prompt) => setOpenPromptId(prompt.id),
     onEdit: (prompt) => setForm({ prompt }),
     onDelete: setPendingDelete,
+    onHistory: (prompt) => {
+      const h = getHistory('prompt', prompt.id)
+      if (h) setHistoryDialogRecord(h)
+    },
   }
 
   function handleQueryChange(q: string) {
@@ -73,12 +96,37 @@ export default function App() {
 
   function handleSubmit(input: UserPromptInput) {
     if (form?.prompt) {
-      update(form.prompt.id, input)
+      const target = form.prompt
+      if (target.origin === 'user') {
+        update(target.id, input)
+      }
+      saveEdit('prompt', target.id, input.title, target, { ...target, ...input }, 'Saved prompt modifications')
     } else {
       create(input)
       navigate(href('/saved'))
     }
     setForm(null)
+  }
+
+  function handleHistoryRevert(versionNumber: number) {
+    if (!historyDialogRecord) return
+    const updated = revertToVersion(historyDialogRecord.entityType, historyDialogRecord.entityId, versionNumber)
+    if (updated) {
+      setHistoryDialogRecord(updated)
+      if (historyDialogRecord.entityType === 'prompt') {
+        const p = savedPrompts.find((pr) => pr.id === historyDialogRecord.entityId)
+        if (p) {
+          const snap = updated.currentSnapshot as UserPrompt
+          update(p.id, {
+            title: snap.title,
+            description: snap.description,
+            category: snap.category,
+            tags: snap.tags,
+            body: snap.body,
+          })
+        }
+      }
+    }
   }
 
   function renderPage() {
@@ -88,7 +136,12 @@ export default function App() {
     }
     if (path === '/saved') {
       return (
-        <SavedPromptsPage route={route} prompts={savedPrompts} onCreate={() => setForm({})} {...promptActions} />
+        <PersonalPage
+          route={route}
+          prompts={allPrompts}
+          onCreatePrompt={() => setForm({})}
+          {...promptActions}
+        />
       )
     }
     if (path === '/workflows') return <WorkflowsPage route={route} promptsById={promptsById} />
@@ -113,6 +166,8 @@ export default function App() {
     )
   }
 
+  const activePromptHistory = openPrompt ? getHistory('prompt', openPrompt.id) : null
+
   return (
     <div className="min-h-screen">
       <Header
@@ -120,7 +175,7 @@ export default function App() {
         query={isWorkflowDetail ? '' : (route.params.get('q') ?? '')}
         onQueryChange={handleQueryChange}
         searchPlaceholder={SEARCH_PLACEHOLDERS[route.path] ?? 'Search prompts, tags, sources…'}
-        savedCount={savedPrompts.length}
+        savedCount={savedPrompts.length + recentlyEdited.length}
         onCreatePrompt={() => setForm({})}
         onOpenMcp={() => setMcpOpen(true)}
       />
@@ -140,8 +195,12 @@ export default function App() {
           }}
           onEdit={promptActions.onEdit}
           onDelete={promptActions.onDelete}
+          onHistory={promptActions.onHistory}
+          versionNumber={activePromptHistory?.currentVersionNumber}
+          totalRevisions={activePromptHistory?.revisions.length}
         />
       )}
+
       {form && (
         <PromptFormDialog
           prompt={form.prompt}
@@ -150,6 +209,7 @@ export default function App() {
           onClose={() => setForm(null)}
         />
       )}
+
       {pendingDelete && (
         <DeletePromptDialog
           prompt={pendingDelete}
@@ -160,6 +220,15 @@ export default function App() {
           onCancel={() => setPendingDelete(null)}
         />
       )}
+
+      {historyDialogRecord && (
+        <EntityHistoryDialog
+          record={historyDialogRecord}
+          onRevert={handleHistoryRevert}
+          onClose={() => setHistoryDialogRecord(null)}
+        />
+      )}
+
       {mcpOpen && <McpConfigDialog onClose={() => setMcpOpen(false)} />}
     </div>
   )

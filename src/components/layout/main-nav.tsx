@@ -3,7 +3,7 @@ import { href } from '../../lib/router'
 
 const NAV_ITEMS = [
   { path: '/prompts', label: 'Prompts' },
-  { path: '/saved', label: 'Saved' },
+  { path: '/saved', label: 'Personal' },
   { path: '/workflows', label: 'Workflows' },
   { path: '/skills', label: 'Skills' },
   { path: '/taste', label: 'Taste' },

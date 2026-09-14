@@ -213,3 +213,21 @@ export function BarChartIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function ClockIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </Icon>
+  )
+}
+
+export function ArrowUturnLeftIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M9 14 4 9l5-5" />
+      <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11" />
+    </Icon>
+  )
+}

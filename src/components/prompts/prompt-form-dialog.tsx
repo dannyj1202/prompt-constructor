@@ -1,13 +1,13 @@
 import { useId, useState, type FormEvent, type ReactNode } from 'react'
 import { CATEGORIES, isCategoryId } from '../../data/categories'
-import type { CategoryId, UserPrompt, UserPromptInput } from '../../types/prompt'
+import type { CategoryId, Prompt, UserPromptInput } from '../../types/prompt'
 import { Button } from '../ui/button'
 import { Modal, ModalFooter, ModalHeader } from '../ui/modal'
 import { TagInput } from '../ui/tag-input'
 
 interface PromptFormDialogProps {
   /** Omit to create a new prompt. */
-  prompt?: UserPrompt
+  prompt?: Prompt
   tagSuggestions: string[]
   /** May throw (e.g. localStorage full); the form shows the error. */
   onSubmit: (input: UserPromptInput) => void

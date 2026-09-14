@@ -9,6 +9,7 @@ import { countByTag } from '../../lib/search'
 import type { Prompt } from '../../types/prompt'
 import { BrowseLayout } from '../layout/browse-layout'
 import { Button } from '../ui/button'
+import { useEntityHistory } from '../../hooks/useEntityHistory'
 import { CardGrid, EmptyState } from '../ui/card-grid'
 import { CopyToast } from '../ui/copy-toast'
 import { CategorySidebar } from './category-sidebar'
@@ -29,6 +30,7 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
   const starredOnly = route.params.get('starred') === '1'
 
   const { isStarred, toggleStar, starredIds } = useStarredPrompts()
+  const { getHistory } = useEntityHistory()
 
   const allTags = useMemo(() => countByTag(prompts).map(([t]) => t), [prompts])
   // Sidebar counts ignore the selected category so they show where matches live.
@@ -103,17 +105,22 @@ export function PromptsPage({ route, prompts, ...actions }: PromptsPageProps) {
           <CardGrid
             items={visible}
             getKey={(prompt) => prompt.id}
-            renderItem={(prompt) => (
-              <PromptCard
-                prompt={prompt}
-                activeTag={tag}
-                onTagClick={toggleTag}
-                highlighted={prompt.id === activeId}
-                isStarred={isStarred(prompt.id)}
-                onToggleStar={() => toggleStar(prompt.id)}
-                {...actions}
-              />
-            )}
+            renderItem={(prompt) => {
+              const history = getHistory('prompt', prompt.id)
+              return (
+                <PromptCard
+                  prompt={prompt}
+                  activeTag={tag}
+                  onTagClick={toggleTag}
+                  highlighted={prompt.id === activeId}
+                  isStarred={isStarred(prompt.id)}
+                  onToggleStar={() => toggleStar(prompt.id)}
+                  versionNumber={history?.currentVersionNumber}
+                  totalRevisions={history?.revisions.length}
+                  {...actions}
+                />
+              )
+            }}
           />
         ) : (
           <EmptyState
