@@ -29,3 +29,27 @@ export function templateVariables(body: string): string[] {
 export function fillTemplate(body: string, values: Record<string, string | undefined>): string {
   return body.replace(TEMPLATE_VARIABLE, (placeholder, name: string) => values[name] || placeholder)
 }
+
+/** Extracts key convention rules from a Taste entry body for clean structured display. */
+export function parseTasteRules(body: string): string[] {
+  const matches = [...body.matchAll(/(?:^|\n)\s*\d+\.\s*\*\*([^*]+)\*\*/g)].map((m) =>
+    m[1].replace(/[:`]/g, '').trim(),
+  )
+  if (matches.length > 0) return matches
+  const headings = [...body.matchAll(/(?:^|\n)###?\s+([^\n]+)/g)]
+    .map((m) => m[1].replace(/[:`#]/g, '').trim())
+    .filter((h) => !h.toLowerCase().includes('example') && !h.toLowerCase().includes('standards'))
+  return headings.slice(0, 5)
+}
+
+/** Extracts key directives or sections from a SKILL.md body for clean preview display. */
+export function parseSkillHighlights(body: string): string[] {
+  const boldDirectives = [...body.matchAll(/(?:^|\n)\s*(?:\d+\.|\*|-)\s*\*\*([^*]+)\*\*/g)].map((m) =>
+    m[1].replace(/[:`]/g, '').trim(),
+  )
+  if (boldDirectives.length > 0) return boldDirectives
+  const headings = [...body.matchAll(/(?:^|\n)##\s+([^\n]+)/g)]
+    .map((m) => m[1].replace(/[:`#]/g, '').trim())
+    .filter((h) => !h.toLowerCase().includes('example') && !h.toLowerCase().includes('rules'))
+  return headings.slice(0, 4)
+}

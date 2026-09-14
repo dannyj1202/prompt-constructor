@@ -14,6 +14,8 @@ interface ContentCardProps {
   tags?: string[]
   activeTag?: string | null
   onTagClick?: (tag: string) => void
+  /** Whether to show tag pills on the card face. Default false to avoid bloat. */
+  showTags?: boolean
   source?: string
   /** Makes the whole card a button that opens a detail view. */
   onOpen?: () => void
@@ -43,6 +45,7 @@ export function ContentCard({
   tags = [],
   activeTag = null,
   onTagClick,
+  showTags = false,
   source,
   onOpen,
   highlighted = false,
@@ -117,7 +120,7 @@ export function ContentCard({
         {children}
 
         <div className="mt-auto space-y-2 pt-3">
-          {onTagClick && (
+          {showTags && onTagClick && tags.length > 0 && (
             <TagList tags={tags} activeTag={activeTag} onTagClick={onTagClick} className="relative z-10" />
           )}
           {(source || footer) && (
