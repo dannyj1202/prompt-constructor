@@ -104,6 +104,7 @@ The SQLite database is created automatically at `server/data/prompt-constructor.
 | `npm run preview` | Locally previews the production build |
 | `npm run typecheck` | Runs TypeScript compiler checks without emitting files |
 | `npm run lint` | Runs `oxlint` for fast static code analysis |
+| `npm test` | Runs the API, security, and merge tests in `tests/` (in-process, against a throwaway database) |
 | `npm run mcp` | Starts the local MCP server over stdio (for testing; clients launch it themselves) |
 
 ---
@@ -118,6 +119,7 @@ prompt-constructor/
 ├── server/
 │   ├── index.ts          # Hono app: CORS, /api/health, route mounting
 │   ├── db.ts             # SQLite connection + schema (CREATE TABLE IF NOT EXISTS)
+│   ├── guard.ts          # Refuses requests that don't come from this machine's own app
 │   ├── routes/           # prompts, workflows, skills, taste, favorites, history, sync
 │   └── data/             # prompt-constructor.db (created at runtime)
 ├── src/
@@ -145,6 +147,7 @@ prompt-constructor/
 │   ├── App.tsx           # Routes, saved-prompt state, app-wide dialogs
 │   ├── main.tsx          # Application entry point
 │   └── index.css         # Tailwind base styles and dark-mode defaults
+├── tests/                # npm test: API, security, and merge tests
 ├── index.html
 ├── package.json
 └── vite.config.ts
@@ -184,7 +187,17 @@ The app is **local-first**, and the **client owns every record**:
 - **Startup sync.** `initializeBackendSync()` (`src/lib/syncManager.ts`, called from `main.tsx`) fetches everything from the API. It merges that with `localStorage` by key using `mergeByUpdatedAt()` (`src/lib/merge.ts`): items on only one side are kept, and the newer `updatedAt` wins. It saves the result locally and pushes it back via `POST /api/sync`. Anything created or edited while the API was down reaches the database on the next load. If the API is unreachable, `localStorage` is left untouched.
 - **Deletes.** Every delete asks for confirmation. It also removes the item's edit history and, for a prompt, its star. It records a tombstone (a deleted-at marker, `src/lib/deletions.ts`) on both sides. The startup merge and every server write skip anything deleted after its last edit, so a delete made while the API was down sticks. An item edited after its deletion counts as re-created and is kept.
 
-Built-in content (`src/data/*`) is never stored in the database, only user-created items, favorites, and edit history. Single-user with no auth: the API listens on `127.0.0.1` only (not reachable from other machines), and CORS only allows the Vite dev server.
+Built-in content (`src/data/*`) is never stored in the database, only user-created items, favorites, and edit history.
+
+### Security
+
+Single-user, no auth, so the API only answers this machine's own app (`server/guard.ts`):
+
+- It listens on `127.0.0.1` only, so other machines can't reach it.
+- A request with a foreign `Origin` gets `403`, whether it's a read, a write, or a bodyless POST. That stops websites you visit from calling the API through your browser; CORS alone only hides responses, it doesn't stop the request. Any `localhost`/`127.0.0.1` port is allowed (Vite moves to 5174 if 5173 is busy). Tools that send no `Origin`, like curl, still work.
+- A `Host` other than `localhost`/`127.0.0.1` gets `403`, which blocks DNS rebinding.
+- `POST`/`PUT` without `Content-Type: application/json` gets `415`. A JSON body can't be sent cross-site without a CORS preflight, and that preflight is refused.
+- Timestamps (`createdAt`, `updatedAt`, `deletedAt`) must be ISO 8601 and at most 5 minutes in the future. Otherwise a record could win every last-write-wins comparison, or a tombstone could block re-creation forever.
 
 ### Database
 
@@ -192,7 +205,7 @@ One SQLite file, one table per entity: `prompts`, `workflows`, `skills` (keyed b
 
 ### API
 
-All routes are under `/api`. Ids are URL-encoded (saved prompt ids contain `/`). Request bodies are validated. A missing required field returns `400`.
+All routes are under `/api`. Ids are URL-encoded (saved prompt ids contain `/`). Request bodies are validated: a missing required field, or a malformed or future timestamp, returns `400`. See Security for the `403`/`415` rules.
 
 | Method | Path | Description |
 |---|---|---|

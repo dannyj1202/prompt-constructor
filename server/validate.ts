@@ -23,6 +23,23 @@ export function isTimestamp(value: unknown): value is string {
   return !Number.isNaN(time) && new Date(time).toISOString() === value
 }
 
+/** Clock skew allowed between the browser that stamps records and this server (same machine, so small). */
+const MAX_FUTURE_SKEW_MS = 5 * 60 * 1000
+
+/** A valid timestamp that isn't in the future, so it can't win every later last-write-wins comparison. */
+export function isPastTimestamp(value: unknown): value is string {
+  return isTimestamp(value) && Date.parse(value) <= Date.now() + MAX_FUTURE_SKEW_MS
+}
+
+/**
+ * A record's createdAt/updatedAt: `fallback` when absent, the value when it's a valid,
+ * non-future timestamp, and null (reject the record) otherwise.
+ */
+export function recordTimestamp(value: unknown, fallback: string): string | null {
+  if (value === undefined || value === null || value === '') return fallback
+  return isPastTimestamp(value) ? value : null
+}
+
 export function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }

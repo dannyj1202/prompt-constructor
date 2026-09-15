@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
-import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { isNonEmptyString, isObject, optionalString, readJson, recordTimestamp, stringArray } from '../validate.ts'
 import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const workflowsRouter = new Hono()
@@ -52,10 +52,13 @@ function parseSteps(value: unknown): WorkflowStep[] {
   )
 }
 
-/** Validates an untrusted workflow and fills defaults. Returns null if id or title is missing. */
+/** Validates an untrusted workflow and fills defaults. Returns null if id or title is missing, or a timestamp is malformed or in the future. */
 export function parseWorkflow(value: unknown): WorkflowRecord | null {
   if (!isObject(value) || !isNonEmptyString(value.id) || !isNonEmptyString(value.title)) return null
   const now = new Date().toISOString()
+  const createdAt = recordTimestamp(value.createdAt, now)
+  const updatedAt = recordTimestamp(value.updatedAt, now)
+  if (!createdAt || !updatedAt) return null
   return {
     id: value.id,
     origin: value.origin === 'builtin' ? 'builtin' : 'user',
@@ -63,8 +66,8 @@ export function parseWorkflow(value: unknown): WorkflowRecord | null {
     description: optionalString(value.description) ?? '',
     steps: parseSteps(value.steps),
     tags: stringArray(value.tags),
-    createdAt: optionalString(value.createdAt) ?? now,
-    updatedAt: optionalString(value.updatedAt) ?? now,
+    createdAt,
+    updatedAt,
   }
 }
 
@@ -120,7 +123,7 @@ workflowsRouter.get('/:id', (c) => {
 // POST create workflow. The client generates the id and timestamps.
 workflowsRouter.post('/', async (c) => {
   const workflow = parseWorkflow(await readJson(c))
-  if (!workflow) return c.json({ error: 'id and title are required' }, 400)
+  if (!workflow) return c.json({ error: 'id and title are required; timestamps must be ISO 8601 and not in the future' }, 400)
   upsertWorkflow(workflow)
   return c.json(getWorkflow(workflow.id) ?? workflow, 201)
 })
@@ -128,7 +131,7 @@ workflowsRouter.post('/', async (c) => {
 // PUT full replacement; creates the workflow if it doesn't exist yet.
 workflowsRouter.put('/:id', async (c) => {
   const workflow = parseWorkflow(await readJson(c))
-  if (!workflow) return c.json({ error: 'id and title are required' }, 400)
+  if (!workflow) return c.json({ error: 'id and title are required; timestamps must be ISO 8601 and not in the future' }, 400)
   if (workflow.id !== c.req.param('id')) return c.json({ error: 'Body id does not match URL' }, 400)
   upsertWorkflow(workflow)
   return c.json(getWorkflow(workflow.id) ?? workflow)

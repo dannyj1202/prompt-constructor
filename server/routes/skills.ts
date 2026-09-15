@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db, transaction } from '../db.ts'
-import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { isNonEmptyString, isObject, optionalString, readJson, recordTimestamp, stringArray } from '../validate.ts'
 import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const skillsRouter = new Hono()
@@ -43,12 +43,15 @@ function rowToSkill(row: SkillRow): SkillRecord {
   }
 }
 
-/** Validates an untrusted skill and fills defaults. Returns null if name, title, or body is missing. */
+/** Validates an untrusted skill and fills defaults. Returns null if name, title, or body is missing, or a timestamp is malformed or in the future. */
 export function parseSkill(value: unknown): SkillRecord | null {
   if (!isObject(value) || !isNonEmptyString(value.name) || !isNonEmptyString(value.title) || !isNonEmptyString(value.body)) {
     return null
   }
   const now = new Date().toISOString()
+  const createdAt = recordTimestamp(value.createdAt, now)
+  const updatedAt = recordTimestamp(value.updatedAt, now)
+  if (!createdAt || !updatedAt) return null
   return {
     name: value.name,
     origin: value.origin === 'builtin' ? 'builtin' : 'user',
@@ -57,8 +60,8 @@ export function parseSkill(value: unknown): SkillRecord | null {
     tags: stringArray(value.tags),
     source: optionalString(value.source) ?? `.cursor/skills/${value.name}/SKILL.md`,
     body: value.body,
-    createdAt: optionalString(value.createdAt) ?? now,
-    updatedAt: optionalString(value.updatedAt) ?? now,
+    createdAt,
+    updatedAt,
   }
 }
 
@@ -116,7 +119,7 @@ skillsRouter.get('/:name', (c) => {
 // POST create skill. The client supplies the name and timestamps.
 skillsRouter.post('/', async (c) => {
   const skill = parseSkill(await readJson(c))
-  if (!skill) return c.json({ error: 'name, title, and body are required' }, 400)
+  if (!skill) return c.json({ error: 'name, title, and body are required; timestamps must be ISO 8601 and not in the future' }, 400)
   upsertSkill(skill)
   return c.json(getSkill(skill.name) ?? skill, 201)
 })
@@ -126,7 +129,7 @@ skillsRouter.post('/', async (c) => {
 // rename: the old row is removed.
 skillsRouter.put('/:name', async (c) => {
   const skill = parseSkill(await readJson(c))
-  if (!skill) return c.json({ error: 'name, title, and body are required' }, 400)
+  if (!skill) return c.json({ error: 'name, title, and body are required; timestamps must be ISO 8601 and not in the future' }, 400)
   const previousName = c.req.param('name')
   transaction(() => {
     if (skill.name !== previousName) db.prepare('DELETE FROM skills WHERE name = ?').run(previousName)

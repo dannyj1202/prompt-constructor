@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
-import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { isNonEmptyString, isObject, optionalString, readJson, recordTimestamp, stringArray } from '../validate.ts'
 import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const promptsRouter = new Hono()
@@ -46,12 +46,15 @@ function rowToPrompt(row: PromptRow): PromptRecord {
   }
 }
 
-/** Validates an untrusted prompt and fills defaults. Returns null if id, title, or body is missing. */
+/** Validates an untrusted prompt and fills defaults. Returns null if id, title, or body is missing, or a timestamp is malformed or in the future. */
 export function parsePrompt(value: unknown): PromptRecord | null {
   if (!isObject(value) || !isNonEmptyString(value.id) || !isNonEmptyString(value.title) || !isNonEmptyString(value.body)) {
     return null
   }
   const now = new Date().toISOString()
+  const createdAt = recordTimestamp(value.createdAt, now)
+  const updatedAt = recordTimestamp(value.updatedAt, now)
+  if (!createdAt || !updatedAt) return null
   return {
     id: value.id,
     origin: value.origin === 'builtin' ? 'builtin' : 'user',
@@ -61,8 +64,8 @@ export function parsePrompt(value: unknown): PromptRecord | null {
     tags: stringArray(value.tags),
     source: optionalString(value.source),
     body: value.body,
-    createdAt: optionalString(value.createdAt) ?? now,
-    updatedAt: optionalString(value.updatedAt) ?? now,
+    createdAt,
+    updatedAt,
   }
 }
 
@@ -122,7 +125,7 @@ promptsRouter.get('/:id', (c) => {
 // POST create prompt. The client generates the id and timestamps.
 promptsRouter.post('/', async (c) => {
   const prompt = parsePrompt(await readJson(c))
-  if (!prompt) return c.json({ error: 'id, title, and body are required' }, 400)
+  if (!prompt) return c.json({ error: 'id, title, and body are required; timestamps must be ISO 8601 and not in the future' }, 400)
   upsertPrompt(prompt)
   return c.json(getPrompt(prompt.id) ?? prompt, 201)
 })
@@ -131,7 +134,7 @@ promptsRouter.post('/', async (c) => {
 // with the stored copy, which stays the existing one if the request was older.
 promptsRouter.put('/:id', async (c) => {
   const prompt = parsePrompt(await readJson(c))
-  if (!prompt) return c.json({ error: 'id, title, and body are required' }, 400)
+  if (!prompt) return c.json({ error: 'id, title, and body are required; timestamps must be ISO 8601 and not in the future' }, 400)
   if (prompt.id !== c.req.param('id')) return c.json({ error: 'Body id does not match URL' }, 400)
   upsertPrompt(prompt)
   return c.json(getPrompt(prompt.id) ?? prompt)

@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db, transaction } from '../db.ts'
-import { isNonEmptyString, isObject, isTimestamp } from '../validate.ts'
+import { isNonEmptyString, isObject, isPastTimestamp } from '../validate.ts'
 
 // Tombstones: one row per deleted user item, so a delete survives the startup
 // merge (src/lib/syncManager.ts) instead of being restored from a stale copy.
@@ -28,14 +28,14 @@ export interface DeletionRecord {
   deletedAt: string
 }
 
-/** Validates an untrusted tombstone. Returns null for an unknown type or a malformed timestamp. */
+/** Validates an untrusted tombstone. Returns null for an unknown type or a malformed or future timestamp. */
 export function parseDeletion(value: unknown): DeletionRecord | null {
   if (
     !isObject(value) ||
     typeof value.entityType !== 'string' ||
     !Object.hasOwn(ENTITY_TABLES, value.entityType) ||
     !isNonEmptyString(value.entityId) ||
-    !isTimestamp(value.deletedAt)
+    !isPastTimestamp(value.deletedAt)
   ) {
     return null
   }
@@ -68,10 +68,10 @@ export function applyDeletion(deletion: DeletionRecord): boolean {
   return Number(changes) > 0
 }
 
-/** Handles a DELETE request. `deletedAt` is the client's delete time; falls back to now if missing or malformed. */
+/** Handles a DELETE request. `deletedAt` is the client's delete time; falls back to now if missing, malformed, or in the future. */
 export function deleteEntity(entityType: string, entityId: string, deletedAt: string | undefined): void {
   transaction(() => {
-    applyDeletion({ entityType, entityId, deletedAt: isTimestamp(deletedAt) ? deletedAt : new Date().toISOString() })
+    applyDeletion({ entityType, entityId, deletedAt: isPastTimestamp(deletedAt) ? deletedAt : new Date().toISOString() })
   })
 }
 

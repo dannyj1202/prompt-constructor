@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
-import { isNonEmptyString, isObject, optionalString, readJson } from '../validate.ts'
+import { isNonEmptyString, isObject, optionalString, readJson, recordTimestamp } from '../validate.ts'
 import { isDeleted } from './deletions.ts'
 
 export const historyRouter = new Hono()
@@ -68,6 +68,9 @@ export function parseHistory(value: unknown): HistoryRecord | null {
     return null
   }
   const now = new Date().toISOString()
+  const createdAt = recordTimestamp(value.createdAt, now)
+  const updatedAt = recordTimestamp(value.updatedAt, now)
+  if (!createdAt || !updatedAt) return null
   return {
     entityId: value.entityId,
     entityType: value.entityType,
@@ -76,8 +79,8 @@ export function parseHistory(value: unknown): HistoryRecord | null {
     currentSnapshot: value.currentSnapshot ?? null,
     currentVersionNumber: value.currentVersionNumber,
     revisions: value.revisions,
-    createdAt: optionalString(value.createdAt) ?? now,
-    updatedAt: optionalString(value.updatedAt) ?? now,
+    createdAt,
+    updatedAt,
   }
 }
 
@@ -136,7 +139,7 @@ historyRouter.get('/:type/:id', (c) => {
 // PUT the full record the client computed after an edit or revert.
 historyRouter.put('/:type/:id', async (c) => {
   const record = parseHistory(await readJson(c))
-  if (!record) return c.json({ error: 'entityType, entityId, currentVersionNumber, and revisions are required' }, 400)
+  if (!record) return c.json({ error: 'entityType, entityId, currentVersionNumber, and revisions are required; timestamps must be ISO 8601 and not in the future' }, 400)
   if (record.entityType !== c.req.param('type') || record.entityId !== c.req.param('id')) {
     return c.json({ error: 'Body entityType/entityId do not match URL' }, 400)
   }

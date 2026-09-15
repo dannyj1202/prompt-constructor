@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { isLocalOrigin, localOnly } from './guard.ts'
 import { deletionsRouter } from './routes/deletions.ts'
 import { favoritesRouter } from './routes/favorites.ts'
 import { historyRouter } from './routes/history.ts'
@@ -12,11 +13,12 @@ import { workflowsRouter } from './routes/workflows.ts'
 
 export const app = new Hono()
 
-// Enable CORS for local dev
+// Refuse anything that isn't this machine's own app (see guard.ts), then allow CORS for it.
+app.use('*', localOnly)
 app.use(
   '*',
   cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: (origin) => (isLocalOrigin(origin) ? origin : null),
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
   }),
