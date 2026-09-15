@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
+import { wasPromptDeleted } from './deletions.ts'
 
 export const favoritesRouter = new Hono()
 
@@ -13,8 +14,9 @@ const starStmt = db.prepare(`
   VALUES (?, ?)
 `)
 
-/** Stars a prompt. Returns false if it was already starred. */
+/** Stars a prompt. Returns false if it was already starred or has been deleted. */
 export function starPrompt(promptId: string): boolean {
+  if (wasPromptDeleted(promptId)) return false
   const { changes } = starStmt.run(promptId, new Date().toISOString())
   return Number(changes) > 0
 }

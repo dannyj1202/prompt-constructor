@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { transaction } from '../db.ts'
 import { isNonEmptyString, isObject, readJson } from '../validate.ts'
+import { applyDeletion, parseDeletion } from './deletions.ts'
 import { starPrompt } from './favorites.ts'
 import { parseHistory, upsertHistory } from './history.ts'
 import { parsePrompt, upsertPrompt } from './prompts.ts'
@@ -28,7 +29,9 @@ syncRouter.post('/', async (c) => {
   const body = await readJson(c)
   if (!isObject(body)) return c.json({ error: 'Expected a JSON object' }, 400)
 
+  // Tombstones go first so the upserts after them can't restore deleted items.
   const synced = transaction(() => ({
+    deletions: upsertAll(body.deletions, parseDeletion, applyDeletion),
     prompts: upsertAll(body.prompts, parsePrompt, upsertPrompt),
     workflows: upsertAll(body.workflows, parseWorkflow, upsertWorkflow),
     skills: upsertAll(body.skills, parseSkill, upsertSkill),

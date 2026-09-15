@@ -25,3 +25,33 @@ export function mergeByUpdatedAt<T extends Timestamped>(local: T[], remote: T[],
   }
   return [...merged.values()].sort(newestFirst)
 }
+
+interface Tombstone {
+  entityType: string
+  entityId: string
+  deletedAt: string
+}
+
+/** Merges two tombstone lists, keeping the latest delete time per item. */
+export function mergeDeletions<T extends Tombstone>(local: T[], remote: T[]): T[] {
+  const merged = new Map<string, T>()
+  for (const deletion of [...local, ...remote]) {
+    const key = `${deletion.entityType}:${deletion.entityId}`
+    const existing = merged.get(key)
+    if (!existing || deletion.deletedAt > existing.deletedAt) merged.set(key, deletion)
+  }
+  return [...merged.values()]
+}
+
+/**
+ * Builds a check for whether an item was deleted at or after its last edit.
+ * An item edited after its delete counts as re-created and is kept; one with
+ * no `updatedAt` counts as deleted if any tombstone exists.
+ */
+export function makeIsDeleted(deletions: Tombstone[]): (entityType: string, entityId: string, updatedAt?: string) => boolean {
+  const deletedAt = new Map(deletions.map((d) => [`${d.entityType}:${d.entityId}`, d.deletedAt]))
+  return (entityType, entityId, updatedAt) => {
+    const time = deletedAt.get(`${entityType}:${entityId}`)
+    return time !== undefined && (updatedAt ?? '') <= time
+  }
+}

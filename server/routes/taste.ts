@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
 import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const tasteRouter = new Hono()
 
@@ -77,6 +78,8 @@ const upsertStmt = db.prepare(`
 
 /** Inserts the entry, or replaces the stored copy if this one is newer. Returns whether anything was written. */
 export function upsertTaste(entry: TasteRecord): boolean {
+  // Don't restore an entry deleted after this copy was last edited.
+  if (isDeleted('taste', entry.id, entry.updatedAt)) return false
   const { changes } = upsertStmt.run(
     entry.id,
     entry.origin,
@@ -127,10 +130,9 @@ tasteRouter.put('/:id', async (c) => {
   return c.json(getTaste(entry.id) ?? entry)
 })
 
-// DELETE taste
+// DELETE taste, with its history. `?deletedAt=` is the client's delete time.
 tasteRouter.delete('/:id', (c) => {
   const id = c.req.param('id')
-  const stmt = db.prepare('DELETE FROM taste WHERE id = ?')
-  stmt.run(id)
+  deleteEntity('taste', id, c.req.query('deletedAt'))
   return c.json({ success: true, id })
 })

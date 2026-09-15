@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
 import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const workflowsRouter = new Hono()
 
@@ -82,6 +83,8 @@ const upsertStmt = db.prepare(`
 
 /** Inserts the workflow, or replaces the stored copy if this one is newer. Returns whether anything was written. */
 export function upsertWorkflow(workflow: WorkflowRecord): boolean {
+  // Don't restore a workflow deleted after this copy was last edited.
+  if (isDeleted('workflow', workflow.id, workflow.updatedAt)) return false
   const { changes } = upsertStmt.run(
     workflow.id,
     workflow.origin,
@@ -131,10 +134,9 @@ workflowsRouter.put('/:id', async (c) => {
   return c.json(getWorkflow(workflow.id) ?? workflow)
 })
 
-// DELETE workflow
+// DELETE workflow, with its history. `?deletedAt=` is the client's delete time.
 workflowsRouter.delete('/:id', (c) => {
   const id = c.req.param('id')
-  const stmt = db.prepare('DELETE FROM workflows WHERE id = ?')
-  stmt.run(id)
+  deleteEntity('workflow', id, c.req.query('deletedAt'))
   return c.json({ success: true, id })
 })

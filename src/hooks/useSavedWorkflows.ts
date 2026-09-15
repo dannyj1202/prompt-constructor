@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { apiCreateWorkflow, apiDeleteWorkflow, apiUpdateWorkflow } from '../lib/api'
+import { apiCreateWorkflow, apiUpdateWorkflow } from '../lib/api'
+import { recordDeletion } from '../lib/deletions'
 import { createId } from '../lib/id'
 import { getSavedWorkflows, setSavedWorkflows, subscribeSavedWorkflows } from '../lib/savedWorkflowsStorage'
 import type { UserWorkflowInput, Workflow } from '../types/workflow'
@@ -32,7 +33,7 @@ export function useSavedWorkflows() {
 
   const remove = useCallback((id: string) => {
     setSavedWorkflows(getSavedWorkflows().filter((wf) => wf.id !== id))
-    apiDeleteWorkflow(id).catch((err) => console.warn('[API] Delete workflow failed, removed locally:', err))
+    recordDeletion('workflow', id)
   }, [])
 
   return { workflows, create, update, remove }

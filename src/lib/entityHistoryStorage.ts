@@ -192,13 +192,19 @@ export function revertEntityToOriginal<T = unknown>(
   return revertEntityToVersion<T>(type, id, 0)
 }
 
-export function deleteEntityHistory(type: EntityType, id: string): void {
+/** Drops the record from localStorage only; the caller handles the API. Returns whether one existed. */
+export function removeEntityHistoryLocally(type: EntityType, id: string): boolean {
   cache ??= read()
   const key = makeKey(type, id)
-  if (!(key in cache)) return
+  if (!(key in cache)) return false
   const nextStore = { ...cache }
   delete nextStore[key]
   write(nextStore)
+  return true
+}
+
+export function deleteEntityHistory(type: EntityType, id: string): void {
+  if (!removeEntityHistoryLocally(type, id)) return
   apiDeleteHistory(type, id).catch((err) =>
     console.warn('[history] Failed to sync delete to API:', err),
   )

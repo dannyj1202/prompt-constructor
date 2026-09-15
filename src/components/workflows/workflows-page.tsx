@@ -13,6 +13,7 @@ import { BrowseLayout } from '../layout/browse-layout'
 import { PageHeading } from '../layout/page-heading'
 import { Button } from '../ui/button'
 import { CardGrid, EmptyState } from '../ui/card-grid'
+import { ConfirmDeleteDialog } from '../ui/confirm-delete-dialog'
 import { ContentCard } from '../ui/content-card'
 import { ClockIcon, PencilIcon, PlusIcon, TrashIcon } from '../ui/icons'
 import { WorkflowFormDialog } from './workflow-form-dialog'
@@ -30,6 +31,7 @@ export function WorkflowsPage({ route, promptsById }: WorkflowsPageProps) {
   const { getHistory, saveEdit, revertToVersion, histories } = useEntityHistory()
   const [formWorkflow, setFormWorkflow] = useState<{ workflow?: Workflow } | null>(null)
   const [historyRecord, setHistoryRecord] = useState<EntityHistoryRecord | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Workflow | null>(null)
 
   // Overlay any customized snapshot onto workflows
   const allWorkflows = useMemo(() => {
@@ -161,7 +163,7 @@ export function WorkflowsPage({ route, promptsById }: WorkflowsPageProps) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => remove(workflow.id)}
+                          onClick={() => setPendingDelete(workflow)}
                           aria-label={`Delete ${workflow.title}`}
                           className="hover:text-red-600 dark:hover:text-red-400"
                         >
@@ -210,6 +212,18 @@ export function WorkflowsPage({ route, promptsById }: WorkflowsPageProps) {
           record={historyRecord}
           onRevert={handleRevert}
           onClose={() => setHistoryRecord(null)}
+        />
+      )}
+
+      {pendingDelete && (
+        <ConfirmDeleteDialog
+          noun="workflow"
+          itemTitle={pendingDelete.title}
+          onConfirm={() => {
+            remove(pendingDelete.id)
+            setPendingDelete(null)
+          }}
+          onCancel={() => setPendingDelete(null)}
         />
       )}
     </>

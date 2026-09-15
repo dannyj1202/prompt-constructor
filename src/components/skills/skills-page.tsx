@@ -13,6 +13,7 @@ import { BrowseLayout } from '../layout/browse-layout'
 import { PageHeading } from '../layout/page-heading'
 import { Button } from '../ui/button'
 import { CardGrid, EmptyState } from '../ui/card-grid'
+import { ConfirmDeleteDialog } from '../ui/confirm-delete-dialog'
 import { ContentCard } from '../ui/content-card'
 import { CopyButton } from '../ui/copy-button'
 import { DetailDialog } from '../ui/detail-dialog'
@@ -24,6 +25,7 @@ export function SkillsPage({ route }: { route: Route }) {
   const { getHistory, saveEdit, revertToVersion, histories } = useEntityHistory()
   const [formSkill, setFormSkill] = useState<{ skill?: Skill } | null>(null)
   const [historyRecord, setHistoryRecord] = useState<EntityHistoryRecord | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<Skill | null>(null)
   const [openSkillName, setOpenSkillName] = useState<string | null>(null)
 
   const allSkills = useMemo(() => {
@@ -168,7 +170,7 @@ export function SkillsPage({ route }: { route: Route }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => remove(skill.name)}
+                          onClick={() => setPendingDelete(skill)}
                           aria-label={`Delete ${skill.title}`}
                           className="hover:text-red-600 dark:hover:text-red-400"
                         >
@@ -278,6 +280,18 @@ export function SkillsPage({ route }: { route: Route }) {
           record={historyRecord}
           onRevert={handleRevert}
           onClose={() => setHistoryRecord(null)}
+        />
+      )}
+
+      {pendingDelete && (
+        <ConfirmDeleteDialog
+          noun="skill"
+          itemTitle={pendingDelete.title}
+          onConfirm={() => {
+            remove(pendingDelete.name)
+            setPendingDelete(null)
+          }}
+          onCancel={() => setPendingDelete(null)}
         />
       )}
     </>

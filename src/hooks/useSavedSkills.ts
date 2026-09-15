@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { apiCreateSkill, apiDeleteSkill, apiUpdateSkill } from '../lib/api'
+import { apiCreateSkill, apiUpdateSkill } from '../lib/api'
+import { recordDeletion } from '../lib/deletions'
 import { getSavedSkills, setSavedSkills, subscribeSavedSkills } from '../lib/savedSkillsStorage'
 import type { Skill, UserSkillInput } from '../types/skill'
 
@@ -31,7 +32,7 @@ export function useSavedSkills() {
 
   const remove = useCallback((name: string) => {
     setSavedSkills(getSavedSkills().filter((skill) => skill.name !== name))
-    apiDeleteSkill(name).catch((err) => console.warn('[API] Delete skill failed, removed locally:', err))
+    recordDeletion('skill', name)
   }, [])
 
   return { skills, create, update, remove }

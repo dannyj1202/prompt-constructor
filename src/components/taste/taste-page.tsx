@@ -13,6 +13,7 @@ import { BrowseLayout } from '../layout/browse-layout'
 import { PageHeading } from '../layout/page-heading'
 import { Button } from '../ui/button'
 import { CardGrid, EmptyState } from '../ui/card-grid'
+import { ConfirmDeleteDialog } from '../ui/confirm-delete-dialog'
 import { ContentCard } from '../ui/content-card'
 import { CopyButton } from '../ui/copy-button'
 import { DetailDialog } from '../ui/detail-dialog'
@@ -24,6 +25,7 @@ export function TastePage({ route }: { route: Route }) {
   const { getHistory, saveEdit, revertToVersion, histories } = useEntityHistory()
   const [formEntry, setFormEntry] = useState<{ entry?: TasteEntry } | null>(null)
   const [historyRecord, setHistoryRecord] = useState<EntityHistoryRecord | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<TasteEntry | null>(null)
   const [openEntryId, setOpenEntryId] = useState<string | null>(null)
 
   const allTaste = useMemo(() => {
@@ -169,7 +171,7 @@ export function TastePage({ route }: { route: Route }) {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => remove(entry.id)}
+                          onClick={() => setPendingDelete(entry)}
                           aria-label={`Delete ${entry.title}`}
                           className="hover:text-red-600 dark:hover:text-red-400"
                         >
@@ -281,6 +283,18 @@ export function TastePage({ route }: { route: Route }) {
           record={historyRecord}
           onRevert={handleRevert}
           onClose={() => setHistoryRecord(null)}
+        />
+      )}
+
+      {pendingDelete && (
+        <ConfirmDeleteDialog
+          noun="taste entry"
+          itemTitle={pendingDelete.title}
+          onConfirm={() => {
+            remove(pendingDelete.id)
+            setPendingDelete(null)
+          }}
+          onCancel={() => setPendingDelete(null)}
         />
       )}
     </>

@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { apiCreatePrompt, apiDeletePrompt, apiUpdatePrompt } from '../lib/api'
+import { apiCreatePrompt, apiUpdatePrompt } from '../lib/api'
+import { recordDeletion } from '../lib/deletions'
 import { createId } from '../lib/id'
 import { getSavedPrompts, setSavedPrompts, subscribeSavedPrompts } from '../lib/savedPromptsStorage'
 import type { UserPrompt, UserPromptInput } from '../types/prompt'
@@ -27,7 +28,7 @@ export function useSavedPrompts() {
 
   const remove = useCallback((id: string) => {
     setSavedPrompts(getSavedPrompts().filter((prompt) => prompt.id !== id))
-    apiDeletePrompt(id).catch((err) => console.warn('[API] Delete prompt failed, removed locally:', err))
+    recordDeletion('prompt', id)
   }, [])
 
   return { prompts, create, update, remove }

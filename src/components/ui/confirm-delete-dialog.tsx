@@ -1,24 +1,25 @@
 import { useId } from 'react'
-import type { UserPrompt } from '../../types/prompt'
-import { Button } from '../ui/button'
-import { Modal, ModalFooter, ModalHeader } from '../ui/modal'
+import { Button } from './button'
+import { Modal, ModalFooter, ModalHeader } from './modal'
 
-interface DeletePromptDialogProps {
-  prompt: UserPrompt
+interface ConfirmDeleteDialogProps {
+  /** What's being deleted, e.g. "saved prompt" or "workflow". */
+  noun: string
+  itemTitle: string
   onConfirm: () => void
   onCancel: () => void
 }
 
 /** Mount only while a delete is pending. */
-export function DeletePromptDialog({ prompt, onConfirm, onCancel }: DeletePromptDialogProps) {
+export function ConfirmDeleteDialog({ noun, itemTitle, onConfirm, onCancel }: ConfirmDeleteDialogProps) {
   const titleId = useId()
 
   return (
     <Modal open onClose={onCancel} labelledBy={titleId} className="w-[min(28rem,calc(100vw-2rem))]">
       <ModalHeader
         titleId={titleId}
-        title="Delete saved prompt?"
-        description={`"${prompt.title}" will be removed from this browser. This can't be undone.`}
+        title={`Delete ${noun}?`}
+        description={`"${itemTitle}" and its edit history will be permanently deleted. This can't be undone.`}
         onClose={onCancel}
       />
       <ModalFooter className="justify-end">

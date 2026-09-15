@@ -1,5 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react'
-import { apiCreateTaste, apiDeleteTaste, apiUpdateTaste } from '../lib/api'
+import { apiCreateTaste, apiUpdateTaste } from '../lib/api'
+import { recordDeletion } from '../lib/deletions'
 import { createId } from '../lib/id'
 import { getSavedTaste, setSavedTaste, subscribeSavedTaste } from '../lib/savedTasteStorage'
 import type { TasteEntry, UserTasteInput } from '../types/taste'
@@ -32,7 +33,7 @@ export function useSavedTaste() {
 
   const remove = useCallback((id: string) => {
     setSavedTaste(getSavedTaste().filter((entry) => entry.id !== id))
-    apiDeleteTaste(id).catch((err) => console.warn('[API] Delete taste failed, removed locally:', err))
+    recordDeletion('taste', id)
   }, [])
 
   return { tasteEntries, create, update, remove }

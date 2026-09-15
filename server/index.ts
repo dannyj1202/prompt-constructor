@@ -1,6 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
+import { deletionsRouter } from './routes/deletions.ts'
 import { favoritesRouter } from './routes/favorites.ts'
 import { historyRouter } from './routes/history.ts'
 import { promptsRouter } from './routes/prompts.ts'
@@ -37,6 +38,7 @@ app.route('/api/skills', skillsRouter)
 app.route('/api/taste', tasteRouter)
 app.route('/api/favorites', favoritesRouter)
 app.route('/api/history', historyRouter)
+app.route('/api/deletions', deletionsRouter)
 app.route('/api/sync', syncRouter)
 
 const PORT = Number(process.env.PORT) || 3001

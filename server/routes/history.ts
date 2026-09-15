@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
 import { isNonEmptyString, isObject, optionalString, readJson } from '../validate.ts'
+import { isDeleted } from './deletions.ts'
 
 export const historyRouter = new Hono()
 
@@ -96,6 +97,8 @@ const upsertStmt = db.prepare(`
 
 /** Inserts the record, or replaces the stored copy if this one is newer. Returns whether anything was written. */
 export function upsertHistory(record: HistoryRecord): boolean {
+  // A deleted item's history goes with it, unless it was edited afterwards.
+  if (isDeleted(record.entityType, record.entityId, record.updatedAt)) return false
   const { changes } = upsertStmt.run(
     historyKey(record),
     record.entityType,

@@ -4,7 +4,7 @@ import { Header } from './components/layout/header'
 import { PageHeading } from './components/layout/page-heading'
 import { McpConfigDialog } from './components/mcp/mcp-config-dialog'
 import { PersonalPage } from './components/personal/personal-page'
-import { DeletePromptDialog } from './components/prompts/delete-prompt-dialog'
+import { ConfirmDeleteDialog } from './components/ui/confirm-delete-dialog'
 import type { PromptActions } from './components/prompts/prompt-actions'
 import { PromptDetailDialog } from './components/prompts/prompt-detail-dialog'
 import { PromptFormDialog } from './components/prompts/prompt-form-dialog'
@@ -211,8 +211,9 @@ export default function App() {
       )}
 
       {pendingDelete && (
-        <DeletePromptDialog
-          prompt={pendingDelete}
+        <ConfirmDeleteDialog
+          noun="saved prompt"
+          itemTitle={pendingDelete.title}
           onConfirm={() => {
             remove(pendingDelete.id)
             setPendingDelete(null)

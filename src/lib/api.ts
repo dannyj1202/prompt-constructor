@@ -3,6 +3,7 @@ import type { UserPrompt } from '../types/prompt'
 import type { Skill } from '../types/skill'
 import type { TasteEntry } from '../types/taste'
 import type { Workflow } from '../types/workflow'
+import type { Deletion } from './deletions'
 
 // Writes send the full record the client just saved, including its timestamps.
 // The server stores it only if it's newer than its own copy (last write wins).
@@ -45,12 +46,6 @@ export async function apiUpdatePrompt(id: string, prompt: UserPrompt): Promise<U
   })
 }
 
-export async function apiDeletePrompt(id: string): Promise<void> {
-  await request<{ success: boolean }>(`/prompts/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-  })
-}
-
 // ----------------- Workflows -----------------
 export async function apiGetWorkflows(): Promise<Workflow[]> {
   return request<Workflow[]>('/workflows')
@@ -67,12 +62,6 @@ export async function apiUpdateWorkflow(id: string, workflow: Workflow): Promise
   return request<Workflow>(`/workflows/${encodeURIComponent(id)}`, {
     method: 'PUT',
     body: JSON.stringify(workflow),
-  })
-}
-
-export async function apiDeleteWorkflow(id: string): Promise<void> {
-  await request<{ success: boolean }>(`/workflows/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
   })
 }
 
@@ -96,12 +85,6 @@ export async function apiUpdateSkill(name: string, skill: Skill): Promise<Skill>
   })
 }
 
-export async function apiDeleteSkill(name: string): Promise<void> {
-  await request<{ success: boolean }>(`/skills/${encodeURIComponent(name)}`, {
-    method: 'DELETE',
-  })
-}
-
 // ----------------- Taste -----------------
 export async function apiGetTaste(): Promise<TasteEntry[]> {
   return request<TasteEntry[]>('/taste')
@@ -121,10 +104,22 @@ export async function apiUpdateTaste(id: string, entry: TasteEntry): Promise<Tas
   })
 }
 
-export async function apiDeleteTaste(id: string): Promise<void> {
-  await request<{ success: boolean }>(`/taste/${encodeURIComponent(id)}`, {
-    method: 'DELETE',
-  })
+// ----------------- Deletes -----------------
+const ENTITY_PATHS: Record<EntityType, string> = {
+  prompt: '/prompts',
+  workflow: '/workflows',
+  skill: '/skills',
+  taste: '/taste',
+}
+
+/** Deletes a user item along with its history (and a prompt's favorite). `deletedAt` stamps the tombstone. */
+export async function apiDeleteEntity(type: EntityType, id: string, deletedAt: string): Promise<void> {
+  const path = `${ENTITY_PATHS[type]}/${encodeURIComponent(id)}?deletedAt=${encodeURIComponent(deletedAt)}`
+  await request<{ success: boolean }>(path, { method: 'DELETE' })
+}
+
+export async function apiGetDeletions(): Promise<Deletion[]> {
+  return request<Deletion[]>('/deletions')
 }
 
 // ----------------- Favorites -----------------
@@ -171,6 +166,7 @@ export interface SyncPayload {
   taste?: TasteEntry[]
   favorites?: string[]
   history?: EntityHistoryRecord[]
+  deletions?: Deletion[]
 }
 
 export async function apiSyncLocalStorage(payload: SyncPayload): Promise<{ success: boolean }> {

@@ -182,12 +182,13 @@ The app is **local-first**, and the **client owns every record**:
 - **Writes.** Each hook in `src/hooks/useSaved*.ts` and `useStarredPrompts.ts` writes to its `localStorage` store synchronously, so the UI updates instantly. It then sends the full record it just saved, including the client-generated id and timestamps, via `src/lib/api.ts`. Edit history works the same way: `src/lib/entityHistoryStorage.ts` builds each revision and sends the whole record. A failed request only logs a warning.
 - **Server.** Every write is an upsert with **last write wins by `updatedAt`**. A copy older than the stored one is ignored, so stale or repeated requests are harmless.
 - **Startup sync.** `initializeBackendSync()` (`src/lib/syncManager.ts`, called from `main.tsx`) fetches everything from the API. It merges that with `localStorage` by key using `mergeByUpdatedAt()` (`src/lib/merge.ts`): items on only one side are kept, and the newer `updatedAt` wins. It saves the result locally and pushes it back via `POST /api/sync`. Anything created or edited while the API was down reaches the database on the next load. If the API is unreachable, `localStorage` is left untouched.
+- **Deletes.** Every delete asks for confirmation. It also removes the item's edit history and, for a prompt, its star. It records a tombstone (a deleted-at marker, `src/lib/deletions.ts`) on both sides. The startup merge and every server write skip anything deleted after its last edit, so a delete made while the API was down sticks. An item edited after its deletion counts as re-created and is kept.
 
 Built-in content (`src/data/*`) is never stored in the database, only user-created items, favorites, and edit history. Single-user with no auth: the API listens on `127.0.0.1` only (not reachable from other machines), and CORS only allows the Vite dev server.
 
 ### Database
 
-One SQLite file, one table per entity: `prompts`, `workflows`, `skills` (keyed by `name`), `taste`, `favorites`, and `entity_history`. Arrays and objects (`tags`, `steps`, snapshots, `revisions`) are stored as JSON text. History rows are keyed `"<entityType>:<entityId>"`. Set `DB_PATH` to use a different file (e.g. a throwaway one for testing).
+One SQLite file, one table per entity: `prompts`, `workflows`, `skills` (keyed by `name`), `taste`, `favorites`, and `entity_history`, plus `deletions` for tombstones. Arrays and objects (`tags`, `steps`, snapshots, `revisions`) are stored as JSON text. History rows are keyed `"<entityType>:<entityId>"`. Set `DB_PATH` to use a different file (e.g. a throwaway one for testing).
 
 ### API
 
@@ -208,14 +209,17 @@ All routes are under `/api`. Ids are URL-encoded (saved prompt ids contain `/`).
 | `POST` `DELETE` | `/favorites/:promptId` | Star / unstar |
 | `GET` | `/history` | All edit-history records |
 | `GET` `PUT` `DELETE` | `/history/:type/:id` | Read / store the full record (if newer) / delete |
-| `POST` | `/sync` | Bulk upsert (each record only if newer). Invalid items are skipped; returns counts written |
+| `GET` | `/deletions` | All tombstones |
+| `POST` | `/sync` | Bulk apply of tombstones, then upsert of each record (only if newer and not deleted since). Invalid items are skipped; returns counts written |
+
+`DELETE` on `/prompts/:id`, `/workflows/:id`, `/skills/:name`, and `/taste/:id` takes an optional `?deletedAt=<ISO timestamp>` (the client's delete time; defaults to now). It also removes the item's edit history and a prompt's favorite, and records a tombstone.
 
 ### Backend status (work in progress)
 
 Known gaps:
 
-- **Deletions aren't tracked.** If you delete an item while the API is down, it comes back on the next startup merge, because the API still has it. Fixing this needs tombstones (deleted-at markers).
-- **Favorites have no timestamps**, so they merge as a union. Unstarring while the API is down gets undone the same way.
+- **Unstarring while the API is down gets undone** on the next load. Favorites have no timestamps, so they merge as a union. Deleting a prompt does remove its star.
+- **Renaming a skill while the API is down** leaves the old name on the server, and the merge brings it back as a second skill. Online renames are fine.
 
 ## MCP Server
 

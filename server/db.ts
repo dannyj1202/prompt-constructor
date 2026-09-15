@@ -93,4 +93,11 @@ db.exec(`
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS deletions (
+    entity_type TEXT NOT NULL,
+    entity_id TEXT NOT NULL,
+    deleted_at TEXT NOT NULL,
+    PRIMARY KEY (entity_type, entity_id)
+  );
 `)

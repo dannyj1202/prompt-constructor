@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { db } from '../db.ts'
 import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const promptsRouter = new Hono()
 
@@ -82,6 +83,8 @@ const upsertStmt = db.prepare(`
 
 /** Inserts the prompt, or replaces the stored copy if this one is newer. Returns whether anything was written. */
 export function upsertPrompt(prompt: PromptRecord): boolean {
+  // Don't restore a prompt deleted after this copy was last edited.
+  if (isDeleted('prompt', prompt.id, prompt.updatedAt)) return false
   const { changes } = upsertStmt.run(
     prompt.id,
     prompt.origin,
@@ -134,10 +137,10 @@ promptsRouter.put('/:id', async (c) => {
   return c.json(getPrompt(prompt.id) ?? prompt)
 })
 
-// DELETE prompt
+// DELETE prompt, with its history and favorite. `?deletedAt=` is the client's
+// delete time, so the tombstone is comparable with its updatedAt values.
 promptsRouter.delete('/:id', (c) => {
   const id = c.req.param('id')
-  const stmt = db.prepare('DELETE FROM prompts WHERE id = ?')
-  stmt.run(id)
+  deleteEntity('prompt', id, c.req.query('deletedAt'))
   return c.json({ success: true, id })
 })

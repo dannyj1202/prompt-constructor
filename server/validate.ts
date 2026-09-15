@@ -16,6 +16,13 @@ export function optionalString(value: unknown): string | undefined {
   return typeof value === 'string' && value !== '' ? value : undefined
 }
 
+/** An ISO 8601 UTC timestamp exactly as Date#toISOString() writes it, so string comparison orders correctly. */
+export function isTimestamp(value: unknown): value is string {
+  if (typeof value !== 'string') return false
+  const time = Date.parse(value)
+  return !Number.isNaN(time) && new Date(time).toISOString() === value
+}
+
 export function stringArray(value: unknown): string[] {
   return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
 }

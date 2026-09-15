@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { db, transaction } from '../db.ts'
 import { isNonEmptyString, isObject, optionalString, readJson, stringArray } from '../validate.ts'
+import { deleteEntity, isDeleted } from './deletions.ts'
 
 export const skillsRouter = new Hono()
 
@@ -77,6 +78,8 @@ const upsertStmt = db.prepare(`
 
 /** Inserts the skill, or replaces the stored copy if this one is newer. Returns whether anything was written. */
 export function upsertSkill(skill: SkillRecord): boolean {
+  // Don't restore a skill deleted after this copy was last edited.
+  if (isDeleted('skill', skill.name, skill.updatedAt)) return false
   const { changes } = upsertStmt.run(
     skill.name,
     skill.origin,
@@ -132,10 +135,9 @@ skillsRouter.put('/:name', async (c) => {
   return c.json(getSkill(skill.name) ?? skill)
 })
 
-// DELETE skill
+// DELETE skill, with its history. `?deletedAt=` is the client's delete time.
 skillsRouter.delete('/:name', (c) => {
   const name = c.req.param('name')
-  const stmt = db.prepare('DELETE FROM skills WHERE name = ?')
-  stmt.run(name)
+  deleteEntity('skill', name, c.req.query('deletedAt'))
   return c.json({ success: true, name })
 })
