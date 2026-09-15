@@ -33,7 +33,7 @@
 - **Personal Library Hub:** Your saved, starred, and recently edited items in one place.
 - **Light, Dark, or System Theme:** A toggle in the header. System (the default) follows your OS; your choice is remembered.
 - **Tags Page:** Every tag across prompts, skills, and taste, each linking back to a filtered view.
-- **MCP Server:** A local MCP server exposes prompts, skills, and taste to Cursor, Claude, VS Code, Windsurf, Codex, and Gemini CLI.
+- **MCP Server:** A local MCP server exposes prompts, skills, and taste (yours included) to Cursor, Claude, VS Code, Windsurf, Codex, and Gemini CLI, with search and fetch tools so agents can find the right prompt themselves.
 
 ---
 
@@ -105,7 +105,7 @@ The SQLite database is created automatically at `server/data/prompt-constructor.
 | `npm run preview` | Locally previews the production build |
 | `npm run typecheck` | Runs TypeScript compiler checks without emitting files |
 | `npm run lint` | Runs `oxlint` for fast static code analysis |
-| `npm test` | Runs the API, security, and merge tests in `tests/` (in-process, against a throwaway database) |
+| `npm test` | Runs the API, security, merge, and MCP tests in `tests/` (against throwaway databases) |
 | `npm run mcp` | Starts the local MCP server over stdio (for testing; clients launch it themselves) |
 
 ---
@@ -148,7 +148,7 @@ prompt-constructor/
 │   ├── App.tsx           # Routes, saved-prompt state, app-wide dialogs
 │   ├── main.tsx          # Application entry point
 │   └── index.css         # Tailwind base styles and dark-mode defaults
-├── tests/                # npm test: API, security, and merge tests
+├── tests/                # npm test: API, security, merge, and MCP tests
 ├── index.html
 ├── package.json
 └── vite.config.ts
@@ -237,9 +237,25 @@ Known gaps:
 
 ## MCP Server
 
-`mcp/server.ts` is a local stdio MCP server. It exposes prompts, skills, and taste entries as both MCP **prompts** (with `{{VARIABLES}}` as optional arguments) and **resources**. Click **MCP** in the app header for a ready-to-paste config for each client.
+`mcp/server.ts` is a local stdio MCP server. It offers prompts, skills, and taste entries three ways:
+
+- **Tools an agent calls on its own:** `search_prompts` (by words, tag, or kind) and `get_prompt` (the full text by name, with `{{VARIABLES}}` filled in and any unfilled ones listed). Both are read-only.
+- **MCP prompts** you pick yourself, with `{{VARIABLES}}` as optional arguments.
+- **Resources** you can attach to a conversation.
+
+Click **MCP** in the app header for a ready-to-paste config for each client.
 
 - **What it serves:** the built-ins from `src/data`, plus what you've saved in the app. Your own prompts are marked "(saved)", your skills and taste entries "(custom)", and built-ins you've edited "(edited)", served with your edit. Deleted items disappear. Workflows aren't exposed.
 - **Where it reads from:** the API's SQLite database (`server/data/prompt-constructor.db`, or `DB_PATH`). It opens the database read-only on each request, so it always has the latest data. The app doesn't need to be running for it to serve what's already saved. Until the app has synced once, it serves the built-ins alone.
 - **Live updates:** when the database changes, it tells connected clients to re-list.
 - Requires Node 22.18+ (Node runs the TypeScript directly).
+
+### Using it
+
+1. Run the app (`npm run dev`) so what you create reaches the database.
+2. In the app, click **MCP**, paste the config for your client into the file it names, and restart the client.
+3. Then either:
+   - **Let the agent find it.** Ask in plain words, e.g. "write the PR description for OPS-512 using our conventions". The agent calls `search_prompts`, then `get_prompt` with the variables filled in. The server also tells agents when to reach for these tools.
+   - **Pick it yourself.** MCP prompts appear in your client's prompt menu. In Claude Code they're slash commands (`/mcp__prompt-constructor__<name>`), and any item can be attached as a resource with `@prompt-constructor:<uri>`.
+
+What you create, edit, or delete in the app shows up in the client right away.

@@ -71,7 +71,7 @@ mcp/                # Local MCP server
 - Code style follows the Vite template: single quotes, no semicolons
 - **Routing:** hash routes in `App.tsx` `renderPage()`; read filters from `route.params`, write with `updateParams()`
 - **Dialogs:** build on `ui/modal.tsx`; mount only while open; use `data-autofocus` (not `autoFocus`) for initial focus
-- **Shared with `mcp/server.ts`:** `src/data/*`, `src/lib/formatContent.ts`, `src/lib/userPromptGuard.ts` run under Node type stripping, so use only `import type` there (no runtime imports)
+- **Shared with `mcp/server.ts`:** `src/data/*`, `src/lib/formatContent.ts`, `src/lib/search.ts`, `src/lib/userPromptGuard.ts` run under Node type stripping, so use only `import type` there (no runtime imports)
 - **Effects:** always use a block body; `useEffect(() => window.scrollTo(0, 0))` returns a Promise in newer browsers and crashes React
 
 ## Status

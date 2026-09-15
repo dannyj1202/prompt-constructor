@@ -133,15 +133,71 @@ describe('MCP server', () => {
     assert.ok((await promptNames(client)).includes('saved-new-prompt-new001'))
   })
 
-  test('with no database yet, the built-ins are still served', async () => {
+  test('with no database yet, the built-ins are still served (tools too)', async () => {
     const fresh = await connect(join(dir, 'not-created-yet', 'none.db'))
     try {
       const names = await promptNames(fresh)
       assert.ok(names.includes(BUILT_IN_NAME))
       assert.ok(!names.some((name) => name.startsWith('saved-')))
       assert.notEqual(await promptText(fresh, BUILT_IN_NAME), 'EDITED BODY')
+      const search = await callTool(fresh, 'search_prompts', { query: '' })
+      assert.ok(search.text.includes(BUILT_IN_NAME))
     } finally {
       await fresh.close()
     }
+  })
+})
+
+async function callTool(target: Client, name: string, args: Record<string, unknown>) {
+  const result = await target.callTool({ name, arguments: args })
+  const parts = result.content as { type: string; text?: string }[]
+  return { text: parts.map((part) => part.text ?? '').join('\n'), isError: result.isError === true }
+}
+
+describe('MCP tools for agents', () => {
+  test('lists search_prompts and get_prompt, both marked read-only', async () => {
+    const { tools } = await client.listTools()
+    assert.deepEqual(tools.map((tool) => tool.name), ['search_prompts', 'get_prompt'])
+    for (const tool of tools) assert.equal(tool.annotations?.readOnlyHint, true)
+  })
+
+  test('search finds your own prompt by words from its title, and every word must match', async () => {
+    assert.ok((await callTool(client, 'search_prompts', { query: 'my prompt' })).text.includes('saved-my-prompt-mine01'))
+    assert.match((await callTool(client, 'search_prompts', { query: 'my zzqqxx' })).text, /^No matches/)
+  })
+
+  test('search can filter by kind and by tag, and respects the limit', async () => {
+    const skills = (await callTool(client, 'search_prompts', { kind: 'skill', limit: 50 })).text
+    assert.ok(skills.includes('skill-my-skill'))
+    assert.ok(!skills.includes('saved-my-prompt'))
+    const tagged = (await callTool(client, 'search_prompts', { tag: `#${BUILT_IN.tags[0].toUpperCase()}`, limit: 50 })).text
+    assert.ok(tagged.includes(BUILT_IN_NAME), 'tags match the way the app normalizes them')
+    assert.match((await callTool(client, 'search_prompts', { limit: 2 })).text, /showing the first 2\./)
+    assert.ok((await callTool(client, 'search_prompts', { kind: 'workflow' })).isError)
+  })
+
+  test('search never returns a deleted item', async () => {
+    assert.ok(!(await callTool(client, 'search_prompts', { query: 'gone', limit: 50 })).text.includes('saved-gone-prompt'))
+  })
+
+  test('get_prompt fills variables and says which are still unfilled', async () => {
+    const partial = await callTool(client, 'get_prompt', { name: 'saved-my-prompt-mine01' })
+    assert.ok(partial.text.includes('Fix {{TICKET_ID}} now'))
+    assert.ok(partial.text.includes('Unfilled variables: TICKET_ID'))
+    const full = await callTool(client, 'get_prompt', { name: 'saved-my-prompt-mine01', arguments: { TICKET_ID: 'ABC-1' } })
+    assert.equal(full.text, 'Fix ABC-1 now')
+  })
+
+  test('get_prompt serves your edit of a built-in', async () => {
+    assert.equal((await callTool(client, 'get_prompt', { name: BUILT_IN_NAME })).text, 'EDITED BODY')
+  })
+
+  test('get_prompt on an unknown name is an error that points back to search', async () => {
+    const result = await callTool(client, 'get_prompt', { name: 'my-prompt-typo' })
+    assert.equal(result.isError, true)
+    assert.match(result.text, /search_prompts/)
+    assert.match(result.text, /Did you mean: .*saved-my-prompt-mine01/)
+    const misspelled = await callTool(client, 'get_prompt', { name: BUILT_IN_NAME.slice(0, -1) })
+    assert.match(misspelled.text, new RegExp(`Did you mean: ${BUILT_IN_NAME}\\b`), 'a misspelled ending still suggests the right item first')
   })
 })

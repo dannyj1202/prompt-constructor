@@ -90,9 +90,11 @@ export function McpConfigDialog({ onClose }: { onClose: () => void }) {
 
       <ModalFooter>
         <p className="text-xs text-zinc-500">
-          Exposes built-in prompts, skills, and taste entries, plus the ones you've saved or edited, as MCP prompts and
-          resources. <code className="font-mono">{'{{VARIABLES}}'}</code> become prompt arguments. Your own content comes
-          from the app's local database, so the app doesn't need to be running. Requires Node 22.18+.
+          Exposes built-in prompts, skills, and taste entries, plus the ones you've saved or edited. Agents find and fetch
+          them with the <code className="font-mono">search_prompts</code> and{' '}
+          <code className="font-mono">get_prompt</code> tools; you can also pick them as MCP prompts and resources, where{' '}
+          <code className="font-mono">{'{{VARIABLES}}'}</code> become arguments. Your own content comes from the app's
+          local database, so the app doesn't need to be running. Requires Node 22.18+.
         </p>
       </ModalFooter>
     </Modal>
