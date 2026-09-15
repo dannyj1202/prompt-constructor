@@ -166,13 +166,19 @@ describe('MCP tools for agents', () => {
     assert.match((await callTool(client, 'search_prompts', { query: 'my zzqqxx' })).text, /^No matches/)
   })
 
+  test('natural wording finds the right built-in first: filler ignored, "pull request" = "PR"', async () => {
+    const lines = (await callTool(client, 'search_prompts', { query: 'write a pull request description for our repo' })).text.split('\n')
+    assert.match(lines[1] ?? '', /^- git-pr-workflow-pr-description:/)
+    assert.ok(lines.length <= 6, 'a header plus at most 5 compact lines by default')
+  })
+
   test('search can filter by kind and by tag, and respects the limit', async () => {
     const skills = (await callTool(client, 'search_prompts', { kind: 'skill', limit: 50 })).text
     assert.ok(skills.includes('skill-my-skill'))
     assert.ok(!skills.includes('saved-my-prompt'))
     const tagged = (await callTool(client, 'search_prompts', { tag: `#${BUILT_IN.tags[0].toUpperCase()}`, limit: 50 })).text
     assert.ok(tagged.includes(BUILT_IN_NAME), 'tags match the way the app normalizes them')
-    assert.match((await callTool(client, 'search_prompts', { limit: 2 })).text, /showing the first 2\./)
+    assert.match((await callTool(client, 'search_prompts', { limit: 2 })).text, /, top 2:/)
     assert.ok((await callTool(client, 'search_prompts', { kind: 'workflow' })).isError)
   })
 
@@ -183,7 +189,7 @@ describe('MCP tools for agents', () => {
   test('get_prompt fills variables and says which are still unfilled', async () => {
     const partial = await callTool(client, 'get_prompt', { name: 'saved-my-prompt-mine01' })
     assert.ok(partial.text.includes('Fix {{TICKET_ID}} now'))
-    assert.ok(partial.text.includes('Unfilled variables: TICKET_ID'))
+    assert.ok(partial.text.includes('Missing: TICKET_ID'))
     const full = await callTool(client, 'get_prompt', { name: 'saved-my-prompt-mine01', arguments: { TICKET_ID: 'ABC-1' } })
     assert.equal(full.text, 'Fix ABC-1 now')
   })

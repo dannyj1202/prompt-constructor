@@ -9,6 +9,9 @@
 //
 // Everything is offered three ways: tools an agent can call on its own
 // (search_prompts, get_prompt), MCP prompts a person picks, and resources.
+// The tools are deliberately lean: clients keep tool definitions in the
+// model's context on every turn, so descriptions are one sentence, results
+// are one line each, and there are no server instructions.
 
 import { existsSync, watch } from 'node:fs'
 import { mkdir } from 'node:fs/promises'
@@ -32,11 +35,12 @@ import { BUILT_IN_PROMPTS } from '../src/data/prompts.ts'
 import { SKILLS } from '../src/data/skills.ts'
 import { TASTE_ENTRIES } from '../src/data/taste.ts'
 import { fillTemplate, formatSkillMarkdown, skillPath, templateVariables } from '../src/lib/formatContent.ts'
-import { matchesQuery, normalizeTag } from '../src/lib/search.ts'
+import { normalizeTag } from '../src/lib/search.ts'
 import { isUserPrompt } from '../src/lib/userPromptGuard.ts'
 import type { Prompt, UserPrompt } from '../src/types/prompt.ts'
 import type { Skill } from '../src/types/skill.ts'
 import type { TasteEntry } from '../src/types/taste.ts'
+import { searchLibrary } from './search.ts'
 
 type EntryKind = 'prompt' | 'skill' | 'taste'
 
@@ -255,45 +259,37 @@ function loadEntries(): Entry[] {
 type ToolResult = CallToolResult
 
 const KINDS = ['all', 'prompt', 'skill', 'taste'] as const
-const DEFAULT_LIMIT = 10
-const MAX_LIMIT = 50
+const DEFAULT_LIMIT = 5
+const MAX_LIMIT = 20
+const DESCRIPTION_PREVIEW = 90
 
 const READ_ONLY = { readOnlyHint: true, idempotentHint: true, openWorldHint: false }
 
+// Every word here sits in the model's context on every turn: only what it needs to pick and call a tool.
 const TOOLS = [
   {
     name: 'search_prompts',
-    title: 'Search the prompt library',
     description:
-      "Search Prompt Constructor, the prompt library for this team's engineering conventions (environment setup, git and PR workflow, releases and dependencies, code scaffolding, UI and design system, content and i18n, debugging, analytics). It also holds the user's own saved prompts, agent skills (full SKILL.md files), and coding conventions (\"taste\"). Search it before writing things like a PR description, commit message, or release checklist, so the result follows the team's conventions. Every word in `query` must match. Returns names to pass to get_prompt.",
+      "Find the team's convention prompts (PR descriptions, commits, releases, setup, scaffolding, i18n, design system, debugging, analytics) and the user's saved prompts, skills, and conventions. Returns names for get_prompt.",
     inputSchema: {
       type: 'object' as const,
       properties: {
-        query: {
-          type: 'string',
-          description: 'Words to match in the title, description, tags, source, and text. Leave empty to list everything.',
-        },
-        tag: { type: 'string', description: 'Only items with this tag, e.g. "pr" or "release".' },
-        kind: { type: 'string', enum: [...KINDS], description: 'Only prompts, skills, or taste (conventions). Default "all".' },
-        limit: { type: 'integer', minimum: 1, maximum: MAX_LIMIT, description: `Maximum results. Default ${DEFAULT_LIMIT}.` },
+        query: { type: 'string', description: 'Keywords, e.g. "pr description"' },
+        tag: { type: 'string' },
+        kind: { type: 'string', enum: [...KINDS] },
+        limit: { type: 'integer', minimum: 1, maximum: MAX_LIMIT },
       },
     },
     annotations: READ_ONLY,
   },
   {
     name: 'get_prompt',
-    title: 'Get a prompt',
-    description:
-      'Get the full text of a prompt, skill (as a SKILL.md file), or convention from Prompt Constructor, by the name search_prompts returned. {{VARIABLES}} in the text are filled from `arguments`; any left unfilled are listed so you can ask the user for them.',
+    description: 'Get a prompt by name, with {{VARIABLES}} filled from arguments. Follow the returned text.',
     inputSchema: {
       type: 'object' as const,
       properties: {
-        name: { type: 'string', description: 'The name from search_prompts, e.g. "git-pr-workflow-pr-description".' },
-        arguments: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-          description: 'Values for the {{VARIABLES}}, e.g. {"TICKET_ID": "OPS-512"}.',
-        },
+        name: { type: 'string' },
+        arguments: { type: 'object', additionalProperties: { type: 'string' } },
       },
       required: ['name'],
     },
@@ -301,58 +297,22 @@ const TOOLS = [
   },
 ]
 
-function toolText(...parts: string[]): ToolResult {
-  return { content: parts.map((part) => ({ type: 'text' as const, text: part })) }
+function toolText(message: string): ToolResult {
+  return { content: [{ type: 'text', text: message }] }
 }
 
 function toolError(message: string): ToolResult {
   return { content: [{ type: 'text', text: message }], isError: true }
 }
 
-interface SearchOptions {
-  query: string
-  tag?: string
-  kind: (typeof KINDS)[number]
-}
-
-/**
- * Same rule as the app's search box (every word must appear somewhere), ranked
- * so title and tag hits come before description hits, and those before body-only
- * hits. Ties keep library order, which puts your own items first.
- */
-function searchEntries(entries: Entry[], { query, tag, kind }: SearchOptions): Entry[] {
-  const wantedTag = tag ? normalizeTag(tag) : ''
-  const terms = query.toLowerCase().split(/\s+/).filter(Boolean)
-  const score = (entry: Entry) =>
-    terms.reduce((sum, term) => {
-      if (entry.title.toLowerCase().includes(term) || entry.name.includes(term)) return sum + 4
-      if (entry.tags.some((t) => t.toLowerCase().includes(term))) return sum + 3
-      if (entry.description.toLowerCase().includes(term)) return sum + 2
-      return sum
-    }, 0)
-  return entries
-    .filter(
-      (entry) =>
-        (kind === 'all' || entry.kind === kind) &&
-        (!wantedTag || entry.tags.some((t) => normalizeTag(t) === wantedTag)) &&
-        matchesQuery([entry.name, entry.title, entry.description, entry.category, entry.source, entry.text, ...entry.tags], query),
-    )
-    .map((entry) => ({ entry, score: score(entry) }))
-    .sort((a, b) => b.score - a.score)
-    .map(({ entry }) => entry)
-}
-
-function describeEntry(entry: Entry, index: number): string {
+/** One compact line per result: enough to pick the right one without fetching it. */
+function resultLine(entry: Entry): string {
+  const about =
+    entry.description.length > DESCRIPTION_PREVIEW
+      ? `${entry.description.slice(0, DESCRIPTION_PREVIEW - 1).trimEnd()}…`
+      : entry.description
   const variables = templateVariables(entry.text)
-  const facts = [entry.kind, entry.category, entry.tags.length ? `tags: ${entry.tags.join(', ')}` : ''].filter(Boolean)
-  return [
-    `${index + 1}. ${entry.name}: ${entry.title}`,
-    `   ${facts.join('; ')}`,
-    entry.description ? `   ${entry.description}` : '',
-    variables.length ? `   variables: ${variables.join(', ')}` : '',
-  ]
-    .filter(Boolean)
-    .join('\n')
+  return `- ${entry.name}: ${entry.title}${about ? ` - ${about}` : ''}${variables.length ? ` [vars: ${variables.join(', ')}]` : ''}`
 }
 
 function stringArg(args: Record<string, unknown>, key: string): string | undefined {
@@ -361,29 +321,32 @@ function stringArg(args: Record<string, unknown>, key: string): string | undefin
 }
 
 function searchTool(entries: Entry[], args: Record<string, unknown>): ToolResult {
-  const query = stringArg(args, 'query') ?? ''
-  const tag = stringArg(args, 'tag')
   const kindArg = stringArg(args, 'kind') ?? 'all'
   const kind = KINDS.find((k) => k === kindArg)
-  if (!kind) return toolError(`\`kind\` must be one of: ${KINDS.join(', ')}.`)
+  if (!kind) return toolError(`kind must be one of: ${KINDS.join(', ')}`)
+  const tag = stringArg(args, 'tag')
+  const wantedTag = tag ? normalizeTag(tag) : ''
   const rawLimit = typeof args.limit === 'number' ? Math.floor(args.limit) : DEFAULT_LIMIT
   const limit = Math.min(Math.max(rawLimit, 1), MAX_LIMIT)
 
-  const matches = searchEntries(entries, { query, tag, kind })
-  const filters = [query && `"${query}"`, tag && `tag "${tag}"`, kind !== 'all' && `kind "${kind}"`].filter(Boolean)
-  const scope = filters.length ? ` for ${filters.join(', ')}` : ''
-  if (matches.length === 0) {
-    return toolText(`No matches${scope}. Try fewer or different words, or drop the tag or kind filter.`)
-  }
-  const shown = matches.slice(0, limit)
-  const count = `${matches.length} ${matches.length === 1 ? 'match' : 'matches'}${scope}`
-  const header = `${count}${shown.length < matches.length ? `, showing the first ${shown.length}` : ''}. Pass a name to get_prompt for its full text.`
-  return toolText([header, ...shown.map(describeEntry)].join('\n\n'))
+  const pool = entries.filter(
+    (entry) =>
+      (kind === 'all' || entry.kind === kind) &&
+      (!wantedTag || entry.tags.some((t) => normalizeTag(t) === wantedTag)),
+  )
+  const { items, exact } = searchLibrary(pool, stringArg(args, 'query') ?? '')
+  if (items.length === 0) return toolText('No matches. Try other keywords.')
+
+  const shown = items.slice(0, limit)
+  const header = exact
+    ? `${items.length} ${items.length === 1 ? 'match' : 'matches'}${shown.length < items.length ? `, top ${shown.length}` : ''}:`
+    : 'No exact match. Closest:'
+  return toolText([header, ...shown.map(resultLine)].join('\n'))
 }
 
 function getPromptTool(entries: Entry[], args: Record<string, unknown>): ToolResult {
   const name = stringArg(args, 'name')?.trim()
-  if (!name) return toolError('`name` is required. Use search_prompts to find one.')
+  if (!name) return toolError('name is required (from search_prompts)')
   const entry = entries.find((e) => e.name === name || e.uri === name)
   if (!entry) {
     // Match on each word's first five letters, so a misspelled ending still finds the right item.
@@ -399,7 +362,7 @@ function getPromptTool(entries: Entry[], args: Record<string, unknown>): ToolRes
       .slice(0, 3)
       .map(({ e }) => e.name)
     const hint = suggestions.length ? ` Did you mean: ${suggestions.join(', ')}?` : ''
-    return toolError(`No prompt named "${name}".${hint} Use search_prompts to find names.`)
+    return toolError(`No prompt named "${name}".${hint} Otherwise use search_prompts.`)
   }
 
   const values: Record<string, string> = {}
@@ -409,24 +372,17 @@ function getPromptTool(entries: Entry[], args: Record<string, unknown>): ToolRes
     }
   }
   const filled = fillTemplate(entry.text, values)
-  const unfilled = templateVariables(filled)
-  return unfilled.length
-    ? toolText(
-        filled,
-        `Unfilled variables: ${unfilled.join(', ')}. Ask the user for them, or call get_prompt again with "arguments".`,
-      )
-    : toolText(filled)
+  const missing = templateVariables(filled)
+  return toolText(missing.length ? `${filled}\n\nMissing: ${missing.join(', ')} (pass in arguments)` : filled)
 }
 
 // ----------------- Server -----------------
 
 const server = new Server(
   { name: 'prompt-constructor', version: '0.1.0' },
-  {
-    capabilities: { tools: {}, prompts: { listChanged: true }, resources: { listChanged: true } },
-    instructions:
-      "Prompt Constructor is this team's library of engineering-convention prompts, agent skills, and coding conventions, plus the user's own saved ones. When a task has a team convention (PR descriptions, commit messages, release checklists, scaffolding, i18n, design-system mapping, debugging, analytics), call search_prompts, then get_prompt with any variables filled in, and follow what it returns.",
-  },
+  // No `instructions`: clients add them to the model's context on every turn, and the tool
+  // descriptions already say when to use the tools.
+  { capabilities: { tools: {}, prompts: { listChanged: true }, resources: { listChanged: true } } },
 )
 
 server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }))

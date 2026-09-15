@@ -239,7 +239,9 @@ Known gaps:
 
 `mcp/server.ts` is a local stdio MCP server. It offers prompts, skills, and taste entries three ways:
 
-- **Tools an agent calls on its own:** `search_prompts` (by words, tag, or kind) and `get_prompt` (the full text by name, with `{{VARIABLES}}` filled in and any unfilled ones listed). Both are read-only.
+- **Tools an agent calls on its own:** `search_prompts` (by keywords, tag, or kind) and `get_prompt` (the full text by name, with `{{VARIABLES}}` filled in and any missing ones named). Both are read-only.
+  - **Forgiving search** (`mcp/search.ts`): filler words are ignored, common synonyms match ("PR" / "pull request", "i18n" / "translation"), plurals match their stem, and short words only match whole words. If nothing has every word, it returns the closest matches, labelled as such.
+  - **Lean on the model's context:** one-sentence tool descriptions, one line per result (5 by default), and no server instructions, since clients keep all of that in context on every turn.
 - **MCP prompts** you pick yourself, with `{{VARIABLES}}` as optional arguments.
 - **Resources** you can attach to a conversation.
 
@@ -255,7 +257,7 @@ Click **MCP** in the app header for a ready-to-paste config for each client.
 1. Run the app (`npm run dev`) so what you create reaches the database.
 2. In the app, click **MCP**, paste the config for your client into the file it names, and restart the client.
 3. Then either:
-   - **Let the agent find it.** Ask in plain words, e.g. "write the PR description for OPS-512 using our conventions". The agent calls `search_prompts`, then `get_prompt` with the variables filled in. The server also tells agents when to reach for these tools.
+   - **Let the agent find it.** Ask in plain words, e.g. "write the PR description for OPS-512 using our conventions". The agent calls `search_prompts`, then `get_prompt` with the variables filled in.
    - **Pick it yourself.** MCP prompts appear in your client's prompt menu. In Claude Code they're slash commands (`/mcp__prompt-constructor__<name>`), and any item can be attached as a resource with `@prompt-constructor:<uri>`.
 
 What you create, edit, or delete in the app shows up in the client right away.
