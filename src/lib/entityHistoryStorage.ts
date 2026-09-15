@@ -1,4 +1,5 @@
 import type { EntityHistoryRecord, EntityRevision, EntityType, RecentlyEditedItem } from '../types/history'
+import { apiDeleteHistory, apiSaveHistory } from './api'
 
 export const ENTITY_HISTORY_STORAGE_KEY = 'prompt-constructor:entity-history:v1'
 
@@ -139,6 +140,7 @@ export function recordEntityEdit<T = unknown>(
     [key]: updatedRecord as unknown as EntityHistoryRecord,
   }
   write(nextStore)
+  apiSaveHistory(updatedRecord).catch((err) => console.warn('[history] Failed to sync edit to API:', err))
   return updatedRecord
 }
 
@@ -179,6 +181,7 @@ export function revertEntityToVersion<T = unknown>(
     [key]: updatedRecord as unknown as EntityHistoryRecord,
   }
   write(nextStore)
+  apiSaveHistory(updatedRecord).catch((err) => console.warn('[history] Failed to sync revert to API:', err))
   return updatedRecord
 }
 
@@ -196,6 +199,14 @@ export function deleteEntityHistory(type: EntityType, id: string): void {
   const nextStore = { ...cache }
   delete nextStore[key]
   write(nextStore)
+  apiDeleteHistory(type, id).catch((err) =>
+    console.warn('[history] Failed to sync delete to API:', err),
+  )
+}
+
+/** Replaces the whole store, e.g. with the result of merging against the API. */
+export function setAllEntityHistories(records: EntityHistoryRecord[]): void {
+  write(Object.fromEntries(records.map((record) => [makeKey(record.entityType, record.entityId), record])))
 }
 
 export function getRecentlyEditedItems(): RecentlyEditedItem[] {

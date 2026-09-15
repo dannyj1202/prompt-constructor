@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useSyncExternalStore } from 'react'
+import { apiStarPrompt, apiUnstarPrompt } from '../lib/api'
 import { getStarredPromptIds, setStarredPromptIds, subscribeStarredPrompts } from '../lib/starredPromptsStorage'
 
 export function useStarredPrompts() {
@@ -11,8 +12,10 @@ export function useStarredPrompts() {
     const current = getStarredPromptIds()
     if (current.includes(id)) {
       setStarredPromptIds(current.filter((x) => x !== id))
+      apiUnstarPrompt(id).catch((err) => console.warn('[API] Unstar failed, updated locally:', err))
     } else {
       setStarredPromptIds([...current, id])
+      apiStarPrompt(id).catch((err) => console.warn('[API] Star failed, updated locally:', err))
     }
   }, [])
 

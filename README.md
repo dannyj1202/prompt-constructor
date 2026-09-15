@@ -25,10 +25,12 @@
 - **Sidebar & Tag Navigation:** Live count badges showing prompt distribution and clickable tag pills.
 - **Detail View & Templating:** Modal inspection showing formatted prompt text with template variables (e.g. `{{TICKET_ID}}`, `{{VERSION}}`).
 - **One-Click Copy:** Fast clipboard copying with instant visual feedback.
-- **Client-Side & Lightweight:** Fast, responsive, dark-mode ready, with zero backend requirement (custom prompts persist in `localStorage`).
+- **Local-First Persistence:** Everything you create is written to `localStorage` immediately, then mirrored to a local SQLite-backed API. The UI keeps working if the API is down.
 - **Saved Prompts:** Create, edit, and delete your own prompts (title, description, labels, optional category). They appear in the main library with a Saved badge and on their own Saved page.
-- **Workflows:** Ordered chains of prompts with per-step notes; expand and copy each step in turn.
-- **Skills & Taste:** Agent skills (copied as complete `SKILL.md` files) and coding conventions from AGENTS.md / constitution.md.
+- **Workflows, Skills & Taste:** Create your own alongside the built-ins. Workflows are ordered prompt chains with per-step notes; skills copy as complete `SKILL.md` files; taste entries capture coding conventions from AGENTS.md / constitution.md.
+- **Favorites:** Star prompts to pin them in your personal library.
+- **Edit History & Rollback:** Every edit (including to built-ins) is versioned; view past revisions and revert to any of them.
+- **Personal Library Hub:** Your saved, starred, and recently edited items in one place.
 - **Tags Page:** Every tag across prompts, skills, and taste, each linking back to a filtered view.
 - **MCP Server:** A local MCP server exposes prompts, skills, and taste to Cursor, Claude, VS Code, Windsurf, Codex, and Gemini CLI.
 
@@ -56,6 +58,8 @@
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Styling:** [Tailwind CSS v4](https://tailwindcss.com/) via `@tailwindcss/vite`
 - **Linting:** [Oxlint](https://oxc.rs/)
+- **API:** [Hono](https://hono.dev/) on `@hono/node-server`, port `3001`
+- **Database:** SQLite via Node's built-in [`node:sqlite`](https://nodejs.org/api/sqlite.html) (no native dependency)
 - **MCP:** [`@modelcontextprotocol/sdk`](https://github.com/modelcontextprotocol/typescript-sdk) (local stdio server)
 
 ---
@@ -64,7 +68,7 @@
 
 ### Prerequisites
 
-Ensure you have Node.js (v18+ recommended) and npm installed.
+Node.js **22.18+** and npm. The API server and MCP server both rely on Node running TypeScript directly (type stripping), and the API uses the built-in `node:sqlite` module.
 
 ### Installation
 
@@ -77,19 +81,25 @@ npm install
 
 ### Development Server
 
-Start the local development server:
+Start the frontend and API together:
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+This runs two processes via `concurrently`, with prefixed logs:
+
+- `[vite]`: the app at [http://localhost:5173](http://localhost:5173), which proxies `/api/*` to the API
+- `[api]`: the Hono API at [http://127.0.0.1:3001](http://127.0.0.1:3001) (check it at `/api/health`)
+
+The SQLite database is created automatically at `server/data/prompt-constructor.db` on first start. It's gitignored, since it holds your personal data.
 
 ### Available Scripts
 
 | Command | Description |
 |---|---|
-| `npm run dev` | Starts the Vite development server with hot reloading |
+| `npm run dev` | Starts Vite and the API server together, both in watch mode |
+| `npm run server` | Starts only the API server in watch mode (set `PORT` to override `3001`) |
 | `npm run build` | Runs TypeScript check (`tsc -b`) and builds production bundle in `dist/` |
 | `npm run preview` | Locally previews the production build |
 | `npm run typecheck` | Runs TypeScript compiler checks without emitting files |
@@ -105,14 +115,21 @@ prompt-constructor/
 ├── mcp/
 │   ├── server.ts         # Local MCP server (stdio)
 │   └── vite-plugin.ts    # Dev endpoint mirroring saved prompts to mcp/.data/
+├── server/
+│   ├── index.ts          # Hono app: CORS, /api/health, route mounting
+│   ├── db.ts             # SQLite connection + schema (CREATE TABLE IF NOT EXISTS)
+│   ├── routes/           # prompts, workflows, skills, taste, favorites, history, sync
+│   └── data/             # prompt-constructor.db (created at runtime)
 ├── src/
 │   ├── components/
 │   │   ├── layout/       # Header, nav, search, page layouts
 │   │   ├── prompts/      # Prompts + Saved pages, cards, form, dialogs
-│   │   ├── workflows/    # Workflow list and detail
-│   │   ├── skills/       # Skills page
-│   │   ├── taste/        # Taste page
+│   │   ├── workflows/    # Workflow list, detail, and form
+│   │   ├── skills/       # Skills page and form
+│   │   ├── taste/        # Taste page and form
 │   │   ├── tags/         # Tags page
+│   │   ├── personal/     # Personal library hub (saved, starred, recently edited)
+│   │   ├── history/      # Version history dialog and badge
 │   │   ├── mcp/          # MCP config dialog
 │   │   └── ui/           # Shared UI primitives (button, modal, card, tags, icons)
 │   ├── data/
@@ -122,8 +139,8 @@ prompt-constructor/
 │   │   ├── taste.ts      # Conventions from AGENTS.md / constitution.md
 │   │   ├── workflows.ts  # Ordered prompt chains
 │   │   └── mcpClients.ts # MCP config snippets per client
-│   ├── hooks/            # Custom hooks (clipboard, saved prompts)
-│   ├── lib/              # Pure utilities (router, filtering, storage, formatting)
+│   ├── hooks/            # Custom hooks (saved entities, favorites, history, clipboard, grid nav)
+│   ├── lib/              # Router, filtering, localStorage stores, API client (api.ts), backend sync (syncManager.ts)
 │   ├── types/            # TypeScript types (Prompt, Skill, TasteEntry, Workflow)
 │   ├── App.tsx           # Routes, saved-prompt state, app-wide dialogs
 │   ├── main.tsx          # Application entry point
@@ -157,6 +174,48 @@ Built-in prompts reside in [`src/data/prompts.ts`](src/data/prompts.ts). Each pr
 - **Skills** ([`src/data/skills.ts`](src/data/skills.ts)): `name` (the `.cursor/skills/<name>/` folder), `title`, `description` (SKILL.md frontmatter), `tags`, `source`, and `body` (the markdown after the frontmatter). "Copy to codebase" copies the reassembled SKILL.md.
 - **Taste** ([`src/data/taste.ts`](src/data/taste.ts)): `id`, `title`, `description`, `tags`, `source`, and a single markdown `body`.
 - **Workflows** ([`src/data/workflows.ts`](src/data/workflows.ts)): `id`, `title`, `description`, and ordered `steps`, each `{ promptId, note? }` referencing a built-in or saved prompt by id.
+
+## Backend & Persistence
+
+The app is **local-first**, and the **client owns every record**:
+
+- **Writes.** Each hook in `src/hooks/useSaved*.ts` and `useStarredPrompts.ts` writes to its `localStorage` store synchronously, so the UI updates instantly. It then sends the full record it just saved, including the client-generated id and timestamps, via `src/lib/api.ts`. Edit history works the same way: `src/lib/entityHistoryStorage.ts` builds each revision and sends the whole record. A failed request only logs a warning.
+- **Server.** Every write is an upsert with **last write wins by `updatedAt`**. A copy older than the stored one is ignored, so stale or repeated requests are harmless.
+- **Startup sync.** `initializeBackendSync()` (`src/lib/syncManager.ts`, called from `main.tsx`) fetches everything from the API. It merges that with `localStorage` by key using `mergeByUpdatedAt()` (`src/lib/merge.ts`): items on only one side are kept, and the newer `updatedAt` wins. It saves the result locally and pushes it back via `POST /api/sync`. Anything created or edited while the API was down reaches the database on the next load. If the API is unreachable, `localStorage` is left untouched.
+
+Built-in content (`src/data/*`) is never stored in the database, only user-created items, favorites, and edit history. Single-user with no auth: the API listens on `127.0.0.1` only (not reachable from other machines), and CORS only allows the Vite dev server.
+
+### Database
+
+One SQLite file, one table per entity: `prompts`, `workflows`, `skills` (keyed by `name`), `taste`, `favorites`, and `entity_history`. Arrays and objects (`tags`, `steps`, snapshots, `revisions`) are stored as JSON text. History rows are keyed `"<entityType>:<entityId>"`. Set `DB_PATH` to use a different file (e.g. a throwaway one for testing).
+
+### API
+
+All routes are under `/api`. Ids are URL-encoded (saved prompt ids contain `/`). Request bodies are validated. A missing required field returns `400`.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness check |
+| `GET` `POST` | `/prompts` | List (newest first) / create |
+| `GET` `PUT` `DELETE` | `/prompts/:id` | Read / replace or create (if newer) / delete |
+| `GET` `POST` | `/workflows` | List / create |
+| `GET` `PUT` `DELETE` | `/workflows/:id` | Read / replace or create (if newer) / delete |
+| `GET` `POST` | `/skills` | List / create |
+| `GET` `PUT` `DELETE` | `/skills/:name` | Read / replace or create (if newer); a different `name` in the body renames / delete |
+| `GET` `POST` | `/taste` | List / create |
+| `GET` `PUT` `DELETE` | `/taste/:id` | Read / replace or create (if newer) / delete |
+| `GET` | `/favorites` | List starred prompt ids |
+| `POST` `DELETE` | `/favorites/:promptId` | Star / unstar |
+| `GET` | `/history` | All edit-history records |
+| `GET` `PUT` `DELETE` | `/history/:type/:id` | Read / store the full record (if newer) / delete |
+| `POST` | `/sync` | Bulk upsert (each record only if newer). Invalid items are skipped; returns counts written |
+
+### Backend status (work in progress)
+
+Known gaps:
+
+- **Deletions aren't tracked.** If you delete an item while the API is down, it comes back on the next startup merge, because the API still has it. Fixing this needs tombstones (deleted-at markers).
+- **Favorites have no timestamps**, so they merge as a union. Unstarring while the API is down gets undone the same way.
 
 ## MCP Server
 

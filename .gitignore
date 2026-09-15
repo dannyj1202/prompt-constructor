@@ -25,3 +25,6 @@ dist-ssr
 
 # Saved prompts mirrored for the local MCP server
 mcp/.data
+
+# Local API database (personal data; created at runtime)
+server/data
