@@ -36,7 +36,7 @@ export function SearchInput({ value, onChange, placeholder = 'Search…' }: Sear
 
   return (
     <div className="relative w-full">
-      <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400" />
+      <SearchIcon className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-zinc-400 dark:text-zinc-500" />
       <input
         ref={inputRef}
         type="search"
@@ -50,7 +50,8 @@ export function SearchInput({ value, onChange, placeholder = 'Search…' }: Sear
         }}
         placeholder={placeholder}
         aria-label={placeholder.replace(/…$/, '')}
-        className="h-10 w-full rounded-lg border border-zinc-200 bg-white pr-10 pl-9 text-sm outline-none placeholder:text-zinc-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 dark:border-zinc-800 dark:bg-zinc-900"
+        // Recessed input well at rest (canvas-inset in dark); it surfaces to white with the indigo ring on focus.
+        className="h-10 w-full rounded-lg border border-zinc-200/80 bg-zinc-100/70 pr-10 pl-9 text-sm transition-colors outline-none placeholder:text-zinc-500 hover:border-zinc-300 focus:border-indigo-500 focus:bg-white focus:ring-2 focus:ring-indigo-500/20 dark:border-white/[0.08] dark:bg-canvas-inset dark:hover:border-white/15 dark:focus:border-indigo-400 dark:focus:bg-canvas-inset"
       />
       {!value && (
         <div className="pointer-events-none absolute top-1/2 right-3 hidden -translate-y-1/2 items-center gap-2 sm:flex">

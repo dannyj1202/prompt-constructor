@@ -86,7 +86,7 @@ export function PromptCard({
       }
     >
       {variables.length > 0 && (
-        <ul className="mt-2 flex flex-wrap gap-1.5">
+        <ul className="mt-3 flex flex-wrap gap-1.5">
           {variables.map((name) => (
             <li
               key={name}

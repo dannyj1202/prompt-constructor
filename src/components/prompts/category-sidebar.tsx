@@ -158,13 +158,11 @@ export function CategorySidebar({
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <nav aria-label="Categories">
-        <h2 className="mb-2 hidden px-3 text-xs font-semibold tracking-wide text-zinc-500 uppercase lg:block">
-          Categories
-        </h2>
+        <h2 className="mb-1.5 hidden px-3 text-xs font-medium text-zinc-500 lg:block dark:text-zinc-400">Categories</h2>
         {/* Horizontal chip row on small screens, vertical list on large. */}
-        <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 lg:mx-0 lg:flex-col lg:gap-0.5 lg:overflow-visible lg:px-0 lg:pb-0">
+        <ul className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] lg:mx-0 lg:flex-col lg:gap-px lg:overflow-visible lg:px-0 lg:pb-0">
           {items.map((item) => {
             const active = item.isStarred ? starredOnly : !starredOnly && item.id === selected
             const style = ACCENT_STYLES[item.accent]
@@ -183,22 +181,30 @@ export function CategorySidebar({
                   title={item.title}
                   aria-current={active ? 'true' : undefined}
                   className={cn(
-                    'flex w-full items-center gap-2.5 rounded-lg py-1.5 pr-3 pl-1.5 text-sm whitespace-nowrap transition-colors',
-                    'focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-indigo-500',
+                    'flex w-full items-center gap-2.5 rounded-lg py-1.5 pr-2 pl-1.5 text-sm whitespace-nowrap transition-colors',
+                    // Inset outline: the sidebar rail scrolls, so an outset one would be clipped at its edges.
+                    'focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-indigo-500',
                     active
                       ? cn(style.activeBg, style.activeText, 'font-medium')
-                      : 'text-zinc-600 hover:bg-zinc-200/60 dark:text-zinc-400 dark:hover:bg-zinc-800/60',
+                      : 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 max-lg:bg-white max-lg:ring-1 max-lg:ring-zinc-200 max-lg:ring-inset dark:text-zinc-400 dark:hover:bg-white/[0.05] dark:hover:text-zinc-100 dark:max-lg:bg-canvas-card dark:max-lg:ring-white/[0.08]',
                     !active && item.count === 0 && 'opacity-50',
                   )}
                 >
-                  <span className={cn('grid size-6 shrink-0 place-items-center rounded-md', style.iconBg, style.iconText)}>
+                  {/* The accent glyph always carries the category's identity; its tinted tile appears only when active. */}
+                  <span
+                    className={cn(
+                      'grid size-6 shrink-0 place-items-center rounded-md transition-colors',
+                      style.iconText,
+                      active && style.iconBg,
+                    )}
+                  >
                     <item.Icon className="size-3.5" strokeWidth={2.25} />
                   </span>
                   <span className="min-w-0 flex-1 truncate text-left">{item.name}</span>
                   <span
                     className={cn(
-                      'shrink-0 rounded-full px-1.5 py-0.5 text-xs tabular-nums',
-                      active ? cn(style.countBg, style.countText) : 'bg-zinc-200/60 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400',
+                      'min-w-6 shrink-0 rounded-full px-1.5 py-0.5 text-center text-xs tabular-nums',
+                      active ? cn(style.countBg, style.countText, 'font-medium') : 'text-zinc-500 dark:text-zinc-400',
                     )}
                   >
                     {item.count}
@@ -211,7 +217,7 @@ export function CategorySidebar({
       </nav>
 
       {tags.length > 0 && (
-        <SidebarSection title="Tags" className="hidden lg:block">
+        <SidebarSection title="Tags" className="hidden border-t border-zinc-200/70 pt-4 lg:block dark:border-white/[0.06]">
           <TagList tags={tags} activeTag={activeTag} onTagClick={onTagClick} className="px-3" />
         </SidebarSection>
       )}

@@ -53,12 +53,18 @@ export function ContentCard({
   footer,
   children,
 }: ContentCardProps) {
+  const hasMetaRow = Boolean(eyebrow || actions)
+
   return (
     <article
       onMouseMove={trackSpotlight}
       className={cn(
-        'group relative flex w-full flex-col rounded-xl border border-zinc-200 bg-white p-4 shadow-sm transition hover:border-zinc-300 hover:shadow-md dark:border-white/8 dark:bg-canvas-card dark:hover:border-white/15',
-        highlighted && 'border-indigo-500 ring-2 ring-indigo-500/40 dark:border-indigo-400 dark:ring-indigo-400/30',
+        'group relative flex w-full flex-col rounded-xl border bg-white p-5 transition-[border-color,box-shadow] duration-200 dark:bg-canvas-card',
+        // Light mode lifts on a soft cast shadow; dark mode stays tonal (border only), per DESIGN.md.
+        'shadow-[0_1px_2px_rgb(24_24_27/0.04)] hover:shadow-[0_10px_28px_-14px_rgb(24_24_27/0.22)] dark:shadow-none dark:hover:shadow-none',
+        highlighted
+          ? 'border-indigo-500 ring-2 ring-indigo-500/40 dark:border-indigo-400 dark:ring-indigo-400/30'
+          : 'border-zinc-200/80 hover:border-zinc-300 dark:border-white/[0.07] dark:hover:border-white/15',
       )}
     >
       {/* Cursor-tracking spotlight: a soft flood behind the content, plus a border ring that only shows a 1px edge via mask-composite. */}
@@ -83,51 +89,61 @@ export function ContentCard({
       />
 
       <div className="relative z-[1] flex flex-1 flex-col">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            {eyebrow && <div className="flex flex-wrap items-center gap-1.5 text-xs font-medium">{eyebrow}</div>}
-            <h3 className="mt-0.5 leading-snug font-semibold">
-              {onOpen ? (
-                // Stretched button: the whole card opens the detail view, while
-                // actions and tags sit above it on z-10.
-                <button
-                  id={id}
-                  type="button"
-                  onClick={onOpen}
-                  className="text-left after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-indigo-500"
-                >
-                  {title}
-                </button>
-              ) : (
-                title
-              )}
-            </h3>
+        {/* Meta row: labels left, actions right, so the title below gets the card's full width. */}
+        {hasMetaRow && (
+          <div className="flex min-h-8 items-center justify-between gap-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-1.5 text-xs font-medium">{eyebrow}</div>
+            {actions && <div className="relative z-10 flex shrink-0 items-center gap-1.5">{actions}</div>}
           </div>
-          {actions && <div className="relative z-10 flex shrink-0 items-center gap-1">{actions}</div>}
-        </div>
+        )}
 
-        <p className="mt-2 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>
+        <h3
+          className={cn(
+            'text-base leading-snug font-semibold tracking-[-0.01em] text-zinc-900 dark:text-zinc-50',
+            hasMetaRow && 'mt-2.5',
+          )}
+        >
+          {onOpen ? (
+            // Stretched button: the whole card opens the detail view, while
+            // actions and tags sit above it on z-10.
+            <button
+              id={id}
+              type="button"
+              onClick={onOpen}
+              className="text-left after:absolute after:inset-0 after:rounded-xl focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-indigo-500"
+            >
+              {title}
+            </button>
+          ) : (
+            title
+          )}
+        </h3>
+
+        {/* Two lines reserved so descriptions start and end at the same height across a row. */}
+        <p className="mt-1.5 line-clamp-2 min-h-12 text-sm leading-6 text-zinc-600 dark:text-zinc-400">{description}</p>
 
         {preview && (
-          <div className="relative mt-3">
-            <pre className="line-clamp-2 rounded-lg bg-zinc-50 p-3 font-mono text-xs whitespace-pre-wrap text-zinc-700 dark:bg-canvas-inset dark:text-zinc-300">
+          // Recessed well (canvas-inset) marks this as literal, copyable text. Padding lives on the
+          // wrapper so the two-line clamp can't leak a third line into it.
+          <div className="mt-4 rounded-lg bg-zinc-50 px-3 py-2.5 ring-1 ring-zinc-200/70 ring-inset dark:bg-canvas-inset dark:ring-white/[0.05]">
+            <pre className="line-clamp-2 font-mono text-xs leading-5 whitespace-pre-wrap text-zinc-700 dark:text-zinc-300">
               {preview}
             </pre>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-5 rounded-b-lg bg-gradient-to-t from-zinc-50 to-transparent dark:from-canvas-inset" />
           </div>
         )}
 
         {children}
 
-        <div className="mt-auto space-y-2 pt-3">
+        <div className="mt-auto pt-4">
           {showTags && onTagClick && tags.length > 0 && (
-            <TagList tags={tags} activeTag={activeTag} onTagClick={onTagClick} className="relative z-10" />
+            <TagList tags={tags} activeTag={activeTag} onTagClick={onTagClick} className="relative z-10 mb-3" />
           )}
           {(source || footer) && (
-            <div className="flex items-center justify-between gap-3">
+            <div className="flex min-h-8 items-center justify-between gap-3 border-t border-zinc-100 pt-3 dark:border-white/[0.06]">
               {source ? (
-                <p className="min-w-0 flex-1 truncate text-xs text-zinc-500" title={source}>
-                  Source: <code className="inline-block max-w-full truncate align-bottom font-mono">{source}</code>
+                <p className="flex min-w-0 flex-1 items-baseline gap-1 text-xs text-zinc-500 dark:text-zinc-400" title={source}>
+                  <span className="shrink-0">Source:</span>
+                  <code className="min-w-0 truncate font-mono">{source}</code>
                 </p>
               ) : (
                 <span />

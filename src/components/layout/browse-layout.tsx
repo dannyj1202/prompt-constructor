@@ -29,13 +29,18 @@ export function BrowseLayout({
   children,
 }: BrowseLayoutProps) {
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-8">
       {heading}
       <div className={sidebar ? 'lg:grid lg:grid-cols-[15rem_1fr] lg:gap-8' : undefined}>
-        {sidebar && <aside className="lg:sticky lg:top-32 lg:self-start">{sidebar}</aside>}
+        {/* On large screens the sidebar is its own translucent rail: a layer between the dotted canvas and the solid cards. */}
+        {sidebar && (
+          <aside className="lg:sticky lg:top-28 lg:max-h-[calc(100dvh-8.5rem)] lg:self-start lg:overflow-y-auto lg:rounded-xl lg:border lg:border-zinc-200/70 lg:bg-white/60 lg:p-2 lg:backdrop-blur-sm lg:[scrollbar-width:thin] dark:lg:border-white/[0.06] dark:lg:bg-white/[0.02]">
+            {sidebar}
+          </aside>
+        )}
 
-        <main className={sidebar ? 'mt-4 min-w-0 lg:mt-0' : 'min-w-0'}>
-          <div className="mb-4 flex min-h-7 flex-wrap items-center gap-2 text-sm text-zinc-500">
+        <main className={sidebar ? 'mt-5 min-w-0 lg:mt-0' : 'min-w-0'}>
+          <div className="mb-4 flex min-h-7 flex-wrap items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400">
             <span>
               {count} {count === 1 ? noun[0] : noun[1]}
               {context}

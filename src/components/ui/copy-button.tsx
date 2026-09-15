@@ -17,13 +17,14 @@ export function CopyButton({ text, label = 'Copy', className }: CopyButtonProps)
       type="button"
       onClick={() => copy(text)}
       className={cn(
-        'inline-flex min-h-[32px] min-w-[32px] items-center justify-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium whitespace-nowrap transition active:translate-y-px',
+        // Same surface, height, and radius as StarButton so the two sit as a matched pair.
+        'inline-flex h-8 min-w-8 items-center justify-center gap-1.5 rounded-md border px-2.5 text-xs font-medium whitespace-nowrap transition active:translate-y-px',
         'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500',
         copied
-          ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'
+          ? 'border-emerald-500/40 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-500/15 dark:text-emerald-300'
           : status === 'error'
-            ? 'border-red-500/40 bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300'
-            : 'border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800',
+            ? 'border-red-500/40 bg-red-50 text-red-700 dark:border-red-400/30 dark:bg-red-500/15 dark:text-red-300'
+            : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-900 dark:border-white/10 dark:bg-white/[0.03] dark:text-zinc-200 dark:hover:border-white/20 dark:hover:bg-white/[0.07]',
         className,
       )}
     >

@@ -31,6 +31,7 @@
 - **Favorites:** Star prompts to pin them in your personal library.
 - **Edit History & Rollback:** Every edit (including to built-ins) is versioned; view past revisions and revert to any of them.
 - **Personal Library Hub:** Your saved, starred, and recently edited items in one place.
+- **Light, Dark, or System Theme:** A toggle in the header. System (the default) follows your OS; your choice is remembered.
 - **Tags Page:** Every tag across prompts, skills, and taste, each linking back to a filtered view.
 - **MCP Server:** A local MCP server exposes prompts, skills, and taste to Cursor, Claude, VS Code, Windsurf, Codex, and Gemini CLI.
 

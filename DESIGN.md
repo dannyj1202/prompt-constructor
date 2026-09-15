@@ -7,7 +7,7 @@ colors:
   canvas: "#090a0c"
   canvas-card: "#111215"
   canvas-inset: "#0c0d0f"
-  neutral-bg: "#fafafa"
+  neutral-bg: "#f4f4f5"
   neutral-text: "#18181b"
   neutral-text-dark: "#f4f4f5"
   emerald: "#10b981"
@@ -73,19 +73,19 @@ components:
     rounded: "{rounded.md}"
     padding: "6px 12px"
   tag-pill:
-    backgroundColor: "#f4f4f5"
+    backgroundColor: "transparent"
     textColor: "#52525b"
-    rounded: "{rounded.full}"
-    padding: "2px 8px"
+    rounded: "{rounded.sm}"
+    padding: "2px 6px"
   tag-pill-active:
     backgroundColor: "{colors.signal-indigo}"
     textColor: "#ffffff"
-    rounded: "{rounded.full}"
-    padding: "2px 8px"
+    rounded: "{rounded.sm}"
+    padding: "2px 6px"
   card:
     backgroundColor: "#ffffff"
     rounded: "{rounded.lg}"
-    padding: "{spacing.lg}"
+    padding: "{spacing.xl}"
 ---
 
 # Design System: Prompt Constructor
@@ -122,6 +122,7 @@ The palette is restrained: one interactive accent, eight category identity color
 
 ### Neutral
 - **Obsidian Canvas** (`#090a0c`): Dark-mode page background, under a faint radial dot-matrix texture (1px dots, 22px pitch, ~6% opacity).
+- **Light Canvas** (`#f4f4f5` / `zinc-100`): Light-mode page background (same dots at ~5%), one step below the white cards so they separate without heavy shadows.
 - **Canvas Card** (`#111215`): Dark-mode surface for cards, sidebar rows, and inset panels one step up from canvas.
 - **Canvas Inset** (`#0c0d0f`): Dark-mode surface one step *recessed* — code previews, input wells.
 - **Zinc scale** (Tailwind default `zinc-50` through `zinc-950`): borders, body text, muted text, and light-mode surfaces throughout.
@@ -141,7 +142,8 @@ The palette is restrained: one interactive accent, eight category identity color
 - **Heading** (600, 1.5rem/24px, tight tracking): Page titles only (`<h1>` via `PageHeading`). One per page.
 - **Title** (600, 1.125rem/18px): Modal dialog titles.
 - **Body** (400, 0.875rem/14px, 1.5 line-height): Descriptions, prose, form labels.
-- **Label** (500, 0.75rem/12px, slight positive tracking, often uppercase): Eyebrows, section headings ("Categories", "Tags"), badges.
+- **Card title** (600, 1rem/16px, snug leading, -0.01em): Content card titles, two sizes above body text so title and description read as distinct levels.
+- **Label** (500, 0.75rem/12px, sentence case): Eyebrows, section headings ("Categories", "Tags"), badges. Section headings are muted `zinc-500`/`zinc-400`, not uppercase.
 - **Micro** (500, 10–11px): Saved badge, tag counts, compact history badge. Use only for small pill/badge content, never body text.
 
 ### Named Rules
@@ -149,19 +151,19 @@ The palette is restrained: one interactive accent, eight category identity color
 
 ## Layout
 
-Container: `max-w-7xl`, centered, `px-4` gutter, `py-6` vertical page padding. Browse pages use a two-column layout above `lg`: a `15rem` fixed sidebar + fluid content, `gap-8` between them, sidebar `sticky` at `top-32` (clears the sticky header + nav). Below `lg`, the sidebar collapses to a horizontal scrolling chip row above the content — the same category buttons, just re-flowed, not a separate mobile component.
+Container: `max-w-7xl`, centered, `px-4` gutter, `py-8` vertical page padding. Browse pages use a two-column layout above `lg`: a `15rem` fixed sidebar + fluid content, `gap-8` between them. The sidebar is a **rail**: `sticky` at `top-28` (clears the 96px header + nav), capped at the viewport height with its own scroll, on a translucent surface with a hairline border (see Elevation). Below `lg`, the sidebar collapses to a horizontal scrolling chip row above the content — the same category buttons, just re-flowed, not a separate mobile component.
 
-Content grids are `gap-4`, 1 column by default, 2 columns from `sm`, 3 from `xl` — mobile-first, never a fixed column count. The header is `sticky top-0`, translucent (`bg-white/80` / `bg-canvas/80`) with backdrop blur, stacked as: logo + search + actions row, then the main nav row directly beneath, both inside the same header element so they scroll away together.
+Content grids are `gap-4`, 1 column by default, 2 columns from `sm`, 3 from `xl` — mobile-first, never a fixed column count. Cards in a row stretch to equal height. The header is `sticky top-0`, translucent (`bg-white/75` / `bg-canvas/80`) with backdrop blur, stacked as: logo + search + actions row (`h-14`), then the main nav row directly beneath, both inside the same header element so they scroll away together. Above `lg` the top row is a `15rem | 1fr | auto` grid, the same first column as the browse sidebar, so the search field starts exactly where the card grid starts.
 
 Spacing rhythm is tight and consistent: `gap-1.5`/`gap-2` inside controls, `gap-3`/`gap-4` between related elements, `gap-6`/`gap-8` between structural regions. Nothing uses ad-hoc pixel gaps outside the scale above.
 
 ## Elevation & Depth
 
-Dark mode has no drop shadows for depth — depth is entirely tonal layering: three fixed surface tones (canvas → card → inset) plus 1px `white/8` borders that step up to `white/15` on hover. Light mode is the one place real shadows appear: cards sit on `shadow-sm` at rest and lift to `shadow-md` on hover, on a plain white surface with `zinc-200` borders. Modals are an exception in both themes — as a floating overlay above a blurred scrim, a dialog always carries `shadow-2xl` regardless of theme, since "floating above the page" is a real depth relationship shadows correctly describe.
+Dark mode has no drop shadows for depth — depth is entirely tonal layering: three fixed surface tones (canvas → card → inset) plus 1px `white/7` borders that step up to `white/15` on hover. Between canvas and card sits the translucent **sidebar rail** (`white/60` light, `white/2%` dark, hairline border), so a browse page reads as four layers: dotted canvas → rail → solid card → recessed inset (code previews, the search well). Light mode is the one place real shadows appear: cards sit on a barely-there cast shadow at rest and lift to a soft, wide one on hover, on a plain white surface with `zinc-200/80` borders. Modals are an exception in both themes — as a floating overlay above a blurred scrim, a dialog always carries `shadow-2xl` regardless of theme, since "floating above the page" is a real depth relationship shadows correctly describe.
 
 ### Shadow Vocabulary
-- **card-rest** (light only, `shadow-sm`): Default card elevation in light mode.
-- **card-hover** (light only, `shadow-md`): Card elevation on hover, light mode.
+- **card-rest** (light only, `0 1px 2px rgb(24 24 27 / 0.04)`): Default card elevation in light mode.
+- **card-hover** (light only, `0 10px 28px -14px rgb(24 24 27 / 0.22)`): Card elevation on hover, light mode. Wide and low-opacity, so the lift reads without a hard edge.
 - **button-inset** (`inset 0 1px 0 rgba(255,255,255,0.15)`): A faint top highlight inside primary buttons, suggesting a physical bevel rather than a flat fill.
 - **modal** (`shadow-2xl`, both themes): The dialog's floating-above-scrim elevation.
 
@@ -170,7 +172,7 @@ Dark mode has no drop shadows for depth — depth is entirely tonal layering: th
 
 ## Shapes
 
-A small, consistent radius scale, no sharp corners anywhere: `6px` (`rounded-md`) for compact controls and icon badges, `8px` (`rounded-lg`) for buttons, inputs, and nav items, `12px` (`rounded-xl`) for cards, `16px` (`rounded-2xl`) for modals, and `9999px` (`rounded-full`) for every pill — tags, category counts, the saved badge, the history badge. Borders are hairline throughout: `1px zinc-200` in light mode, `1px white/8` (stepping to `white/15` on hover) in dark mode. No heavy borders, no double borders, no dashed borders except the empty-state placeholder.
+A small, consistent radius scale, no sharp corners anywhere: `6px` (`rounded-md`) for compact controls and icon badges, `8px` (`rounded-lg`) for buttons, inputs, and nav items, `12px` (`rounded-xl`) for cards, `16px` (`rounded-2xl`) for modals, and `9999px` (`rounded-full`) for every pill — category counts, the saved badge, the history badge. Tags are the exception: quiet `6px` text chips (see Chips). Borders are hairline throughout: `1px zinc-200` in light mode, `1px white/8` (stepping to `white/15` on hover) in dark mode. No heavy borders, no double borders, no dashed borders except the empty-state placeholder.
 
 ## Components
 
@@ -182,17 +184,19 @@ Buttons, cards, and inputs are sharp and mechanical: presses translate down a ph
 - **Secondary:** White/`zinc-900` fill with a `zinc-200`/`zinc-700` border, same inset highlight and press behavior as primary.
 - **Ghost:** No fill or border; text-only, `zinc-500`, brightens to `zinc-900`/`zinc-100` with a `zinc-100`/`zinc-800` hover fill. Used for icon-only card actions (edit, delete, history).
 - **Danger:** Red-600 fill, white text; reserved for destructive confirmation actions only.
+- **Card action pair (Favorite + Copy):** `StarButton` and `CopyButton` share one surface — `h-8`, `rounded-md`, `zinc-200`/`white/10` border, white/`white/3%` fill — so they sit as a matched pair in the card's meta row. State changes stay semantic: amber when starred, emerald when copied, red on copy failure.
 
 ### Chips / Tags
-- **Style:** `rounded-full`, `zinc-100`/`zinc-800` fill, `zinc-600`/`zinc-300` text at rest.
-- **Active state:** Signal Indigo fill, white text — the same active-state treatment as nav and category sidebar items, so "currently filtering by this" always reads the same way regardless of where the pill lives.
+- **Style:** quiet text chips, not filled pills: `rounded-md`, no fill at rest, `zinc-600`/`zinc-400` text with the `#` at half opacity. A surface (`zinc-200/60` / `white/6%`) appears only on hover. A long tag list reads as a flowing index rather than a wall of grey pills.
+- **Active state:** Signal Indigo fill, white text — the same active-state color as nav and category sidebar items, so "currently filtering by this" always reads the same way regardless of where the chip lives.
 
 ### Cards / Containers (Signature Component: Spotlight Card)
 - **Corner Style:** `12px` (`rounded-xl`).
 - **Background:** White (light) / Canvas Card `#111215` (dark).
-- **Shadow Strategy:** `shadow-sm` → `shadow-md` on hover in light mode; border brightens `zinc-300`/`white-15` on hover in dark mode instead (see Elevation).
-- **Border:** `1px zinc-200` / `1px white/8`.
-- **Internal Padding:** `16px` (`p-4`).
+- **Shadow Strategy:** card-rest → card-hover in light mode; border brightens `zinc-300`/`white-15` on hover in dark mode instead (see Elevation).
+- **Border:** `1px zinc-200/80` / `1px white/7`.
+- **Internal Padding:** `20px` (`p-5`).
+- **Structure (top to bottom):** a meta row (eyebrow labels left, actions right, `h-8`), so the title gets the card's full width. Then the title (Card title type), a description with two lines reserved (so descriptions align across a row), the recessed preview well (`zinc-50`/canvas-inset with an inset hairline ring, mono, clamped to two lines with padding on the wrapper), and finally a footer separated by a hairline rule, holding the source citation and the edit/delete/history controls.
 - **Signature behavior:** every browsable card (prompt, skill, taste, workflow) tracks the cursor via `--spot-x`/`--spot-y` CSS variables and renders two layered radial gradients on hover — a soft indigo flood behind the content and a 1px indigo ring masked to only the card's edge. This is the system's one recurring piece of overt polish; it is reserved for these browsable content cards and should not be copied onto unrelated surfaces (buttons, nav, modals).
 
 ### Inputs / Fields
@@ -201,8 +205,13 @@ Buttons, cards, and inputs are sharp and mechanical: presses translate down a ph
 - **Tag input:** Committed tags render as small indigo pills inside the field itself (`bg-indigo-50`/`indigo-950`), each with its own remove button — the field grows to contain them rather than truncating.
 
 ### Navigation
-- **Main nav:** Flat text links in a row, `rounded-lg` pill background (`zinc-200/80` light, `white/10` dark) on the active item only; everything else is transparent until hovered.
-- **Category sidebar:** Each row pairs a small (`24px`) tinted icon badge in that category's accent color with the label and a count pill; the active row's whole background tints to that category's accent, not just the icon. Rows with zero matches dim to 50% opacity rather than disappearing, so the category list stays a stable, complete map of the taxonomy.
+- **Main nav:** Underline tabs, not pills — sections should read differently from filters. Each tab is a text link; the active one gets a `2px` Signal Indigo bar sitting on the header's bottom rule (`-mb-px`), and hovering an inactive tab shows a neutral bar. Focus uses an inset outline. On narrow screens the row scrolls, with a fade at the right edge to show there's more.
+- **Category sidebar:** Each row pairs a small (`24px`) icon in that category's accent color with the label and a count. At rest the icon is just the colored glyph and the count is plain muted text. The active row tints its whole background to the category's accent, and only then does the icon get its tinted tile and the count its pill. Rows with zero matches dim to 50% opacity rather than disappearing, so the category list stays a stable, complete map of the taxonomy. Tags sit below a hairline rule inside the same rail.
+
+### Theme toggle
+- **Placement:** Header actions, before MCP. Three icon buttons (Light, Dark, System) in one recessed well, the same inset surface as the search field. System is the default.
+- **State:** The chosen option is a raised segment (white / `white/10`) with its icon in Signal Indigo; the others are muted icons that brighten on hover. Each button has `aria-pressed` and an inset focus outline.
+- **Mechanism:** Dark styles key off a `.dark` class on `<html>` (Tailwind `@custom-variant`), not the OS media query. `src/lib/theme.ts` owns the preference (stored in localStorage, synced across tabs) and follows OS changes while on System. An inline script in `index.html` applies it before first paint, so there's no flash of the wrong theme.
 
 ### Modal
 - **Shape:** Native `<dialog>` element (free focus trap, Escape-to-close, top-layer stacking), `rounded-2xl`, `shadow-2xl`, centered via `m-auto`.

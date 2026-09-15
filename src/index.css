@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Dark mode keys off a `dark` class on <html> instead of the OS setting directly, so the header's
+   theme toggle can override it. src/lib/theme.ts manages the class; the inline script in
+   index.html applies it before first paint. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -11,19 +16,22 @@
 
 @layer base {
   :root {
-    color-scheme: light dark;
+    color-scheme: light;
+  }
+
+  :root.dark {
+    color-scheme: dark;
   }
 
   body {
-    @apply bg-zinc-50 font-sans text-zinc-900 antialiased dark:bg-canvas dark:text-zinc-100;
+    /* zinc-100, one step below the white cards and the translucent sidebar rail, so the layers separate. */
+    @apply bg-zinc-100 font-sans text-zinc-900 antialiased dark:bg-canvas dark:text-zinc-100;
     /* Subtle dot-matrix texture so the canvas isn't flat. */
-    background-image: radial-gradient(circle, rgb(0 0 0 / 0.06) 1px, transparent 1px);
+    background-image: radial-gradient(circle, rgb(0 0 0 / 0.05) 1px, transparent 1px);
     background-size: 22px 22px;
   }
 
-  @media (prefers-color-scheme: dark) {
-    body {
-      background-image: radial-gradient(circle, rgb(255 255 255 / 0.06) 1px, transparent 1px);
-    }
+  .dark body {
+    background-image: radial-gradient(circle, rgb(255 255 255 / 0.06) 1px, transparent 1px);
   }
 }
