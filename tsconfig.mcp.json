@@ -20,5 +20,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["mcp/server.ts", "mcp/paths.ts"]
+  "include": ["mcp/server.ts", "server/dbPath.ts"]
 }

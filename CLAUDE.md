@@ -30,8 +30,8 @@ npm run mcp         # Local MCP server over stdio (Node 22.18+)
 | `src/lib/savedPromptsStorage.ts` | localStorage store for saved prompts (key `prompt-constructor:saved-prompts:v1`) |
 | `src/lib/filterPrompts.ts`, `src/lib/search.ts` | Search/category/tag filtering and counts (pure functions) |
 | `src/App.tsx` | Routes, saved-prompt state, and app-wide dialogs |
-| `mcp/server.ts` | Local stdio MCP server; Node runs the TypeScript directly |
-| `mcp/vite-plugin.ts` | Dev-server endpoint that mirrors saved prompts to `mcp/.data/` for the MCP server |
+| `mcp/server.ts` | Local stdio MCP server; Node runs the TypeScript directly. Serves built-ins plus the API's SQLite database (read-only) |
+| `server/dbPath.ts` | SQLite file location, shared by the API (`server/db.ts`) and the MCP server |
 | `UI-Improver/README.md` | UI/UX redesign guide, reference component mappings, and liquid metal specs |
 
 ## Project Structure
@@ -51,7 +51,7 @@ src/
     ├── tags/       # Tags page
     ├── mcp/        # MCP config dialog
     └── ui/         # Generic primitives (button, modal, content card, tag list/input, icons)
-mcp/                # Local MCP server + Vite sync plugin
+mcp/                # Local MCP server
 ```
 
 ## Data Model

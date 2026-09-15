@@ -23,7 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 
-# Saved prompts mirrored for the local MCP server
+# Legacy: saved prompts the dev server used to mirror for the MCP server (it now reads the database)
 mcp/.data
 
 # Local API database (personal data; created at runtime)

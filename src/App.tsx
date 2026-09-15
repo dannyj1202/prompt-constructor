@@ -18,9 +18,7 @@ import { BUILT_IN_PROMPTS } from './data/prompts'
 import { useEntityHistory } from './hooks/useEntityHistory'
 import { useSavedPrompts } from './hooks/useSavedPrompts'
 import { useStarredPrompts } from './hooks/useStarredPrompts'
-import { syncSavedPromptsToMcp } from './lib/mcpSync'
 import { href, navigate, updateParams, useHashRoute } from './lib/router'
-import { getSavedPrompts } from './lib/savedPromptsStorage'
 import { countByTag } from './lib/search'
 import type { EntityHistoryRecord } from './types/history'
 import type { BuiltInPrompt, Prompt, UserPrompt, UserPromptInput } from './types/prompt'
@@ -68,10 +66,6 @@ export default function App() {
   const openPrompt = openPromptId ? promptsById.get(openPromptId) : undefined
   const isWorkflowDetail = route.path.startsWith('/workflows/')
 
-  // Seed the MCP server's copy of saved prompts on startup (dev only).
-  useEffect(() => {
-    syncSavedPromptsToMcp(getSavedPrompts())
-  }, [])
   // Braces matter: newer browsers return a Promise from scrollTo, and an
   // effect must return nothing or a cleanup function.
   useEffect(() => {

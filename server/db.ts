@@ -1,13 +1,7 @@
 import { mkdirSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { dirname } from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { fileURLToPath } from 'node:url'
-
-const __dirname = dirname(fileURLToPath(import.meta.url))
-// DB_PATH overrides the location, e.g. to point tests at a throwaway file.
-export const DB_PATH = process.env.DB_PATH
-  ? resolve(process.env.DB_PATH)
-  : resolve(__dirname, 'data', 'prompt-constructor.db')
+import { DB_PATH } from './dbPath.ts'
 
 mkdirSync(dirname(DB_PATH), { recursive: true })
 

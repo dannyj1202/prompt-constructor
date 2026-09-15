@@ -114,11 +114,11 @@ The SQLite database is created automatically at `server/data/prompt-constructor.
 ```
 prompt-constructor/
 ├── mcp/
-│   ├── server.ts         # Local MCP server (stdio)
-│   └── vite-plugin.ts    # Dev endpoint mirroring saved prompts to mcp/.data/
+│   └── server.ts         # Local MCP server (stdio): built-ins + the API's database
 ├── server/
 │   ├── index.ts          # Hono app: CORS, /api/health, route mounting
 │   ├── db.ts             # SQLite connection + schema (CREATE TABLE IF NOT EXISTS)
+│   ├── dbPath.ts         # Database location, shared with the MCP server
 │   ├── guard.ts          # Refuses requests that don't come from this machine's own app
 │   ├── routes/           # prompts, workflows, skills, taste, favorites, history, sync
 │   └── data/             # prompt-constructor.db (created at runtime)
@@ -236,7 +236,9 @@ Known gaps:
 
 ## MCP Server
 
-`mcp/server.ts` is a local stdio MCP server. It exposes built-in and saved prompts, skills, and taste entries as both MCP **prompts** (with `{{VARIABLES}}` as optional arguments) and **resources**. Click **MCP** in the app header for a ready-to-paste config for each client.
+`mcp/server.ts` is a local stdio MCP server. It exposes prompts, skills, and taste entries as both MCP **prompts** (with `{{VARIABLES}}` as optional arguments) and **resources**. Click **MCP** in the app header for a ready-to-paste config for each client.
 
+- **What it serves:** the built-ins from `src/data`, plus what you've saved in the app. Your own prompts are marked "(saved)", your skills and taste entries "(custom)", and built-ins you've edited "(edited)", served with your edit. Deleted items disappear. Workflows aren't exposed.
+- **Where it reads from:** the API's SQLite database (`server/data/prompt-constructor.db`, or `DB_PATH`). It opens the database read-only on each request, so it always has the latest data. The app doesn't need to be running for it to serve what's already saved. Until the app has synced once, it serves the built-ins alone.
+- **Live updates:** when the database changes, it tells connected clients to re-list.
 - Requires Node 22.18+ (Node runs the TypeScript directly).
-- Saved prompts live in browser `localStorage`, which the server can't read. While `npm run dev` is running, the app mirrors them to `mcp/.data/saved-prompts.json` (gitignored), and the server picks up changes automatically.

@@ -1,5 +1,4 @@
 import type { UserPrompt } from '../types/prompt'
-import { syncSavedPromptsToMcp } from './mcpSync'
 import { isUserPrompt } from './userPromptGuard'
 
 // Saved prompts live under their own localStorage key; built-in prompts ship
@@ -40,7 +39,6 @@ export function setSavedPrompts(next: UserPrompt[]): void {
   localStorage.setItem(SAVED_PROMPTS_STORAGE_KEY, JSON.stringify(next))
   cache = next
   emit()
-  syncSavedPromptsToMcp(next)
 }
 
 export function subscribeSavedPrompts(listener: () => void): () => void {
